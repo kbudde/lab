@@ -2,7 +2,7 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   annotations:
-    a8r.io/repository: https://github.com/kbudde/lab.git
+    a8r.io/repository: git@github.com:kbudde/lab.git
   labels:
     app.kubernetes.io/instance: ocis
     app.kubernetes.io/managed-by: Helm

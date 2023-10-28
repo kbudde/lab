@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   annotations:
-    a8r.io/repository: https://github.com/kbudde/lab.git
+    a8r.io/repository: git@github.com:kbudde/lab.git
     ignore-check.kube-linter.io/env-var-secret: IDP_ENCRYPTION_SECRET_FILE is no secret, it's the file path to the secret
   labels:
     app.kubernetes.io/instance: ocis

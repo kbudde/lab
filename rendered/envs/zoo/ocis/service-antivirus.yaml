@@ -2,7 +2,7 @@ apiVersion: v1
 kind: Service
 metadata:
   annotations:
-    a8r.io/repository: https://github.com/kbudde/lab.git
+    a8r.io/repository: git@github.com:kbudde/lab.git
   labels:
     app: antivirus
     app.kubernetes.io/instance: ocis
