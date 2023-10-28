@@ -1,0 +1,166 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    a8r.io/repository: https://github.com/kbudde/lab.git
+  labels:
+    app.kubernetes.io/instance: ocis
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: ocis
+    app.kubernetes.io/version: 4.0.1
+    helm.sh/chart: ocis-0.5.0
+  name: idm
+  namespace: ocis
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: idm
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: idm
+        app.kubernetes.io/instance: ocis
+        app.kubernetes.io/managed-by: Helm
+        app.kubernetes.io/name: ocis
+        app.kubernetes.io/version: 4.0.1
+        helm.sh/chart: ocis-0.5.0
+    spec:
+      automountServiceAccountToken: true
+      containers:
+        - args:
+            - idm
+            - server
+          command:
+            - ocis
+          env:
+            - name: MICRO_REGISTRY
+              value: kubernetes
+            - name: MICRO_REGISTRY_ADDRESS
+              value: ""
+            - name: IDM_LOG_COLOR
+              value: "false"
+            - name: IDM_LOG_LEVEL
+              value: info
+            - name: IDM_LOG_PRETTY
+              value: "false"
+            - name: IDM_TRACING_ENABLED
+              value: "false"
+            - name: IDM_TRACING_TYPE
+              value: jaeger
+            - name: IDM_TRACING_ENDPOINT
+              value: ""
+            - name: IDM_TRACING_COLLECTOR
+              value: ""
+            - name: IDM_DEBUG_PPROF
+              value: "false"
+            - name: IDM_LDAPS_ADDR
+              value: 0.0.0.0:9235
+            - name: IDM_DEBUG_ADDR
+              value: 0.0.0.0:9239
+            - name: IDM_CREATE_DEMO_USERS
+              value: "false"
+            - name: IDM_ADMIN_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  key: password
+                  name: admin-user
+            - name: IDM_ADMIN_USER_ID
+              valueFrom:
+                secretKeyRef:
+                  key: user-id
+                  name: admin-user
+            - name: IDM_SVC_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  key: graph-ldap-bind-password
+                  name: ldap-bind-secrets
+            - name: IDM_REVASVC_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  key: reva-ldap-bind-password
+                  name: ldap-bind-secrets
+            - name: IDM_IDPSVC_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  key: idp-ldap-bind-password
+                  name: ldap-bind-secrets
+            - name: IDM_LDAPS_CERT
+              value: /etc/ocis/ldap-cert/ldap.crt
+            - name: IDM_LDAPS_KEY
+              value: /etc/ocis/ldap-cert/ldap.key
+          image: owncloud/ocis:4.0.1
+          imagePullPolicy: IfNotPresent
+          livenessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /healthz
+              port: metrics-debug
+            initialDelaySeconds: 60
+            periodSeconds: 20
+            timeoutSeconds: 10
+          name: idm
+          ports:
+            - containerPort: 9235
+              name: ldaps
+            - containerPort: 9239
+              name: metrics-debug
+          resources: {}
+          securityContext:
+            readOnlyRootFilesystem: true
+            runAsGroup: 1000
+            runAsNonRoot: true
+            runAsUser: 1000
+          volumeMounts:
+            - mountPath: /etc/ocis
+              name: ocis-config-tmp
+            - mountPath: /etc/ocis/ldap-cert
+              name: ldap-cert
+              readOnly: true
+            - mountPath: /var/lib/ocis
+              name: idm-data
+      initContainers:
+        - command:
+            - chown
+            - 1000:1000
+            - /var/lib/ocis
+          image: busybox:stable
+          imagePullPolicy: IfNotPresent
+          name: init-chown-data
+          securityContext:
+            runAsNonRoot: false
+            runAsUser: 0
+          volumeMounts:
+            - mountPath: /var/lib/ocis
+              name: idm-data
+        - command:
+            - mkdir
+            - -p
+            - /var/lib/ocis/idm
+          image: busybox:stable
+          imagePullPolicy: IfNotPresent
+          name: init-dir
+          resources: {}
+          securityContext:
+            readOnlyRootFilesystem: true
+            runAsGroup: 1000
+            runAsNonRoot: true
+            runAsUser: 1000
+          volumeMounts:
+            - mountPath: /var/lib/ocis
+              name: idm-data
+      nodeSelector: {}
+      securityContext:
+        fsGroup: 1000
+        fsGroupChangePolicy: OnRootMismatch
+      volumes:
+        - emptyDir: {}
+          name: ocis-config-tmp
+        - name: ldap-cert
+          secret:
+            secretName: ldap-cert
+        - name: idm-data
+          persistentVolumeClaim:
+            claimName: idm-data

@@ -1,7 +1,7 @@
 ---
 # Sets the number of applications to be processed in parallel.
 # The default (0) is no limit.
-async: 0
+async: 1
 # One of the zerolog log levels.
 # See: https://github.com/rs/zerolog#leveled-logging
-log-level: info
+log-level: trace

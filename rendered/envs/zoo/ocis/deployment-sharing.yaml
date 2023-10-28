@@ -1,0 +1,136 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    a8r.io/repository: https://github.com/kbudde/lab.git
+  labels:
+    app.kubernetes.io/instance: ocis
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: ocis
+    app.kubernetes.io/version: 4.0.1
+    helm.sh/chart: ocis-0.5.0
+  name: sharing
+  namespace: ocis
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: sharing
+  strategy:
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: sharing
+        app.kubernetes.io/instance: ocis
+        app.kubernetes.io/managed-by: Helm
+        app.kubernetes.io/name: ocis
+        app.kubernetes.io/version: 4.0.1
+        helm.sh/chart: ocis-0.5.0
+    spec:
+      automountServiceAccountToken: true
+      containers:
+        - args:
+            - sharing
+            - server
+          command:
+            - ocis
+          env:
+            - name: MICRO_REGISTRY
+              value: kubernetes
+            - name: MICRO_REGISTRY_ADDRESS
+              value: ""
+            - name: SHARING_LOG_COLOR
+              value: "false"
+            - name: SHARING_LOG_LEVEL
+              value: info
+            - name: SHARING_LOG_PRETTY
+              value: "false"
+            - name: SHARING_TRACING_ENABLED
+              value: "false"
+            - name: SHARING_TRACING_TYPE
+              value: jaeger
+            - name: SHARING_TRACING_ENDPOINT
+              value: ""
+            - name: SHARING_TRACING_COLLECTOR
+              value: ""
+            - name: SHARING_DEBUG_PPROF
+              value: "false"
+            - name: SHARING_GRPC_ADDR
+              value: 0.0.0.0:9150
+            - name: SHARING_DEBUG_ADDR
+              value: 0.0.0.0:9151
+            - name: SHARING_EVENTS_ENDPOINT
+              value: nats:9233
+            - name: SHARING_JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  key: jwt-secret
+                  name: jwt-secret
+            - name: SHARING_PUBLIC_WRITEABLE_SHARE_MUST_HAVE_PASSWORD
+              value: "false"
+            - name: SHARING_USER_DRIVER
+              value: jsoncs3
+            - name: SHARING_USER_JSONCS3_SYSTEM_USER_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  key: api-key
+                  name: storage-system
+            - name: SHARING_USER_JSONCS3_SYSTEM_USER_ID
+              valueFrom:
+                secretKeyRef:
+                  key: user-id
+                  name: storage-system
+            - name: SHARING_PUBLIC_DRIVER
+              value: jsoncs3
+            - name: SHARING_PUBLIC_JSONCS3_SYSTEM_USER_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  key: api-key
+                  name: storage-system
+            - name: SHARING_PUBLIC_JSONCS3_SYSTEM_USER_ID
+              valueFrom:
+                secretKeyRef:
+                  key: user-id
+                  name: storage-system
+          image: owncloud/ocis:4.0.1
+          imagePullPolicy: IfNotPresent
+          livenessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /healthz
+              port: metrics-debug
+            initialDelaySeconds: 60
+            periodSeconds: 20
+            timeoutSeconds: 10
+          name: sharing
+          ports:
+            - containerPort: 9150
+              name: grpc
+            - containerPort: 9151
+              name: metrics-debug
+          resources: {}
+          securityContext:
+            readOnlyRootFilesystem: true
+            runAsGroup: 1000
+            runAsNonRoot: true
+            runAsUser: 1000
+          volumeMounts:
+            - mountPath: /tmp
+              name: tmp-volume
+            - mountPath: /etc/ocis
+              name: ocis-config-tmp
+            - mountPath: /etc/ocis/messaging-system-ca
+              name: messaging-system-ca
+              readOnly: true
+      nodeSelector: {}
+      securityContext:
+        fsGroup: 1000
+        fsGroupChangePolicy: OnRootMismatch
+      volumes:
+        - emptyDir: {}
+          name: tmp-volume
+        - emptyDir: {}
+          name: ocis-config-tmp
+        - emptyDir: {}
+          name: messaging-system-ca

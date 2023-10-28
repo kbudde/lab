@@ -1,0 +1,116 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    a8r.io/repository: https://github.com/kbudde/lab.git
+  labels:
+    app.kubernetes.io/instance: ocis
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: ocis
+    app.kubernetes.io/version: 4.0.1
+    helm.sh/chart: ocis-0.5.0
+  name: web
+  namespace: ocis
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: web
+  strategy:
+    type: RollingUpdate
+  template:
+    metadata:
+      annotations:
+        checksum/config: 539f7634848bc3ecb6eb166453a7e1ac7425bde62184af014494d9a322f0b62e
+      labels:
+        app: web
+        app.kubernetes.io/instance: ocis
+        app.kubernetes.io/managed-by: Helm
+        app.kubernetes.io/name: ocis
+        app.kubernetes.io/version: 4.0.1
+        helm.sh/chart: ocis-0.5.0
+    spec:
+      automountServiceAccountToken: true
+      containers:
+        - args:
+            - web
+            - server
+          command:
+            - ocis
+          env:
+            - name: MICRO_REGISTRY
+              value: kubernetes
+            - name: MICRO_REGISTRY_ADDRESS
+              value: ""
+            - name: WEB_LOG_COLOR
+              value: "false"
+            - name: WEB_LOG_LEVEL
+              value: info
+            - name: WEB_LOG_PRETTY
+              value: "false"
+            - name: WEB_TRACING_ENABLED
+              value: "false"
+            - name: WEB_TRACING_TYPE
+              value: jaeger
+            - name: WEB_TRACING_ENDPOINT
+              value: ""
+            - name: WEB_TRACING_COLLECTOR
+              value: ""
+            - name: WEB_DEBUG_PPROF
+              value: "false"
+            - name: WEB_HTTP_ADDR
+              value: 0.0.0.0:9100
+            - name: WEB_DEBUG_ADDR
+              value: 0.0.0.0:9104
+            - name: WEB_OIDC_AUTHORITY
+              value: https://ocis.zoo.budd.ee
+            - name: WEB_OIDC_CLIENT_ID
+              value: web
+            - name: WEB_UI_THEME_SERVER
+              value: https://ocis.zoo.budd.ee
+            - name: WEB_UI_CONFIG_SERVER
+              value: https://ocis.zoo.budd.ee
+            - name: WEB_OPTION_CONTEXTHELPERS_READ_MORE
+              value: "true"
+            - name: WEB_JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  key: jwt-secret
+                  name: jwt-secret
+          image: owncloud/ocis:4.0.1
+          imagePullPolicy: IfNotPresent
+          livenessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /healthz
+              port: metrics-debug
+            initialDelaySeconds: 60
+            periodSeconds: 20
+            timeoutSeconds: 10
+          name: web
+          ports:
+            - containerPort: 9100
+              name: http
+            - containerPort: 9104
+              name: metrics-debug
+          resources: {}
+          securityContext:
+            readOnlyRootFilesystem: true
+            runAsGroup: 1000
+            runAsNonRoot: true
+            runAsUser: 1000
+          volumeMounts:
+            - mountPath: /etc/ocis
+              name: configs
+            - mountPath: /var/lib/ocis
+              name: web-data
+      nodeSelector: {}
+      securityContext:
+        fsGroup: 1000
+        fsGroupChangePolicy: OnRootMismatch
+      volumes:
+        - configMap:
+            name: web-config
+          name: configs
+        - emptyDir: {}
+          name: web-data

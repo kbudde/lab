@@ -1,0 +1,9 @@
+#@data/values
+---
+environment:
+  id: zoo
+  applications:
+  - proto: ocis
+shared:
+  domain: "zoo.budd.ee"
+

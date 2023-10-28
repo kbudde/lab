@@ -1,0 +1,56 @@
+externalDomain: ocis.zoo.budd.ee
+ingress:
+  enabled: true
+  tls:
+  - secretName: ocis-tls
+    hosts:
+    - ocis.zoo.budd.ee
+features:
+  basicAuthentication: true
+  emailNotifications:
+    enabled: true
+    smtp:
+      host: box.budd.ee
+      port: 465
+      sender: ownCloud <noreply@budd.ee>
+      authentication: login
+      encryption: tls
+services:
+  storagesystem:
+    persistence:
+      enabled: true
+      chownInitContainer: true
+  storageusers:
+    persistence:
+      enabled: true
+      chownInitContainer: true
+      size: 10Gi
+  store:
+    persistence:
+      enabled: true
+      chownInitContainer: true
+      size: 5Gi
+  idm:
+    persistence:
+      enabled: true
+      chownInitContainer: true
+      size: 1Gi
+secretRefs:
+  adminUserSecretRef: admin-user
+  idpSecretRef: idp-secrets
+  jwtSecretRef: jwt-secret
+  machineAuthApiKeySecretRef: machine-auth-api-key
+  storagesystemJwtSecretRef: storage-system-jwt-secret
+  storagesystemSecretRef: storage-system
+  thumbnailsSecretRef: thumbnails-transfer-secret
+  transferSecretSecretRef: transfer-secret
+  notificationsSmtpSecretRef: notifications-smtp-secret
+  ldapCaRef: ldap-ca
+  ldapCertRef: ldap-cert
+  ldapSecretRef: ldap-bind-secrets
+  gdprExportClientSecretRef: ""
+  messagingSystemCaRef: ""
+  s3CredentialsSecretRef: ""
+configRefs:
+  storageusersConfigRef: storage-users
+  graphConfigRef: graph

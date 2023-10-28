@@ -1,3 +1,0 @@
-# Rename to .envr and enable it with direnv
-# SOPS backend for argocd-vault-plugin
-export AVP_TYPE=sops

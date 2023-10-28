@@ -1,0 +1,91 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    a8r.io/repository: https://github.com/kbudde/lab.git
+  labels:
+    app.kubernetes.io/instance: ocis
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: ocis
+    app.kubernetes.io/version: 4.0.1
+    helm.sh/chart: ocis-0.5.0
+  name: audit
+  namespace: ocis
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: audit
+  strategy:
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: audit
+        app.kubernetes.io/instance: ocis
+        app.kubernetes.io/managed-by: Helm
+        app.kubernetes.io/name: ocis
+        app.kubernetes.io/version: 4.0.1
+        helm.sh/chart: ocis-0.5.0
+    spec:
+      automountServiceAccountToken: true
+      containers:
+        - args:
+            - audit
+            - server
+          command:
+            - ocis
+          env:
+            - name: MICRO_REGISTRY
+              value: kubernetes
+            - name: MICRO_REGISTRY_ADDRESS
+              value: ""
+            - name: AUDIT_LOG_COLOR
+              value: "false"
+            - name: AUDIT_LOG_LEVEL
+              value: info
+            - name: AUDIT_LOG_PRETTY
+              value: "false"
+            - name: AUDIT_DEBUG_PPROF
+              value: "false"
+            - name: AUDIT_DEBUG_ADDR
+              value: 0.0.0.0:9229
+            - name: AUDIT_EVENTS_ENDPOINT
+              value: nats:9233
+            - name: AUDIT_LOG_TO_CONSOLE
+              value: "true"
+          image: owncloud/ocis:4.0.1
+          imagePullPolicy: IfNotPresent
+          livenessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /healthz
+              port: metrics-debug
+            initialDelaySeconds: 60
+            periodSeconds: 20
+            timeoutSeconds: 10
+          name: audit
+          ports:
+            - containerPort: 9229
+              name: metrics-debug
+          resources: {}
+          securityContext:
+            readOnlyRootFilesystem: true
+            runAsGroup: 1000
+            runAsNonRoot: true
+            runAsUser: 1000
+          volumeMounts:
+            - mountPath: /etc/ocis
+              name: ocis-config-tmp
+            - mountPath: /etc/ocis/messaging-system-ca
+              name: messaging-system-ca
+              readOnly: true
+      nodeSelector: {}
+      securityContext:
+        fsGroup: 1000
+        fsGroupChangePolicy: OnRootMismatch
+      volumes:
+        - emptyDir: {}
+          name: ocis-config-tmp
+        - emptyDir: {}
+          name: messaging-system-ca

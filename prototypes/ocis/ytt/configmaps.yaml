@@ -1,0 +1,20 @@
+#@ load("@ytt:data", "data")
+#@ environment = data.values.environment
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: storage-users #! default for configRefs.storageusersConfigRef
+data:
+
+  storage-uuid: #@ "<path:secrets/{id}.ocis.yaml#storage-uuid>".format(id=environment.id)
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: graph #! default for configRefs.graphConfigRef
+data:
+
+  application-id: #@ "<path:secrets/{id}.ocis.yaml#application-id>".format(id=environment.id)

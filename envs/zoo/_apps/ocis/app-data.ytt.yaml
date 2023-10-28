@@ -1,0 +1,8 @@
+#@data/values
+---
+application:
+  smtp:
+    hostname: box.budd.ee
+    authentication: login
+    encryption: tls
+    port: 465

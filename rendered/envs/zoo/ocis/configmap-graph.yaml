@@ -1,0 +1,9 @@
+apiVersion: v1
+data:
+  application-id: <path:secrets/zoo.ocis.yaml#application-id>
+kind: ConfigMap
+metadata:
+  annotations:
+    a8r.io/repository: https://github.com/kbudde/lab.git
+  name: graph
+  namespace: ocis

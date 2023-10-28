@@ -1,0 +1,25 @@
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    a8r.io/repository: https://github.com/kbudde/lab.git
+  labels:
+    app: ocdav
+    app.kubernetes.io/instance: ocis
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: ocis
+    app.kubernetes.io/version: 4.0.1
+    helm.sh/chart: ocis-0.5.0
+    ocis-metrics: enabled
+  name: ocdav
+  namespace: ocis
+spec:
+  ports:
+    - name: http
+      port: 8080
+      protocol: TCP
+    - name: metrics-debug
+      port: 9163
+      protocol: TCP
+  selector:
+    app: ocdav

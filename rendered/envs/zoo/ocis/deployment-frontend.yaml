@@ -1,0 +1,133 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    a8r.io/repository: https://github.com/kbudde/lab.git
+  labels:
+    app.kubernetes.io/instance: ocis
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: ocis
+    app.kubernetes.io/version: 4.0.1
+    helm.sh/chart: ocis-0.5.0
+  name: frontend
+  namespace: ocis
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: frontend
+  strategy:
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: frontend
+        app.kubernetes.io/instance: ocis
+        app.kubernetes.io/managed-by: Helm
+        app.kubernetes.io/name: ocis
+        app.kubernetes.io/version: 4.0.1
+        helm.sh/chart: ocis-0.5.0
+    spec:
+      automountServiceAccountToken: true
+      containers:
+        - args:
+            - frontend
+            - server
+          command:
+            - ocis
+          env:
+            - name: MICRO_REGISTRY
+              value: kubernetes
+            - name: MICRO_REGISTRY_ADDRESS
+              value: ""
+            - name: FRONTEND_LOG_COLOR
+              value: "false"
+            - name: FRONTEND_LOG_LEVEL
+              value: info
+            - name: FRONTEND_LOG_PRETTY
+              value: "false"
+            - name: FRONTEND_TRACING_ENABLED
+              value: "false"
+            - name: FRONTEND_TRACING_TYPE
+              value: jaeger
+            - name: FRONTEND_TRACING_ENDPOINT
+              value: ""
+            - name: FRONTEND_TRACING_COLLECTOR
+              value: ""
+            - name: FRONTEND_DEBUG_PPROF
+              value: "false"
+            - name: FRONTEND_HTTP_ADDR
+              value: 0.0.0.0:9140
+            - name: FRONTEND_DEBUG_ADDR
+              value: 0.0.0.0:9141
+            - name: FRONTEND_PUBLIC_URL
+              value: https://ocis.zoo.budd.ee
+            - name: OCIS_LDAP_SERVER_WRITE_ENABLED
+              value: "true"
+            - name: FRONTEND_JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  key: jwt-secret
+                  name: jwt-secret
+            - name: FRONTEND_APP_HANDLER_INSECURE
+              value: "false"
+            - name: FRONTEND_ARCHIVER_INSECURE
+              value: "false"
+            - name: FRONTEND_OCS_PUBLIC_WRITEABLE_SHARE_MUST_HAVE_PASSWORD
+              value: "false"
+            - name: FRONTEND_SEARCH_MIN_LENGTH
+              value: "3"
+            - name: FRONTEND_ENABLE_RESHARING
+              value: "true"
+            - name: FRONTEND_ARCHIVER_MAX_SIZE
+              value: "1073741824"
+            - name: FRONTEND_ARCHIVER_MAX_NUM_FILES
+              value: "10000"
+            - name: FRONTEND_FULL_TEXT_SEARCH_ENABLED
+              value: "false"
+            - name: FRONTEND_OCS_STAT_CACHE_STORE
+              value: noop
+            - name: OCIS_EDITION
+              value: Community
+            - name: FRONTEND_MACHINE_AUTH_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  key: machine-auth-api-key
+                  name: machine-auth-api-key
+            - name: OCIS_TRANSFER_SECRET
+              valueFrom:
+                secretKeyRef:
+                  key: transfer-secret
+                  name: transfer-secret
+          image: owncloud/ocis:4.0.1
+          imagePullPolicy: IfNotPresent
+          livenessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /healthz
+              port: metrics-debug
+            initialDelaySeconds: 60
+            periodSeconds: 20
+            timeoutSeconds: 10
+          name: frontend
+          ports:
+            - containerPort: 9140
+              name: http
+            - containerPort: 9141
+              name: metrics-debug
+          resources: {}
+          securityContext:
+            readOnlyRootFilesystem: true
+            runAsGroup: 1000
+            runAsNonRoot: true
+            runAsUser: 1000
+          volumeMounts:
+            - mountPath: /tmp
+              name: tmp-volume
+      nodeSelector: {}
+      securityContext:
+        fsGroup: 1000
+        fsGroupChangePolicy: OnRootMismatch
+      volumes:
+        - emptyDir: {}
+          name: tmp-volume

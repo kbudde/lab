@@ -1,0 +1,104 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    a8r.io/repository: https://github.com/kbudde/lab.git
+  labels:
+    app.kubernetes.io/instance: ocis
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: ocis
+    app.kubernetes.io/version: 4.0.1
+    helm.sh/chart: ocis-0.5.0
+  name: ocdav
+  namespace: ocis
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ocdav
+  strategy:
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: ocdav
+        app.kubernetes.io/instance: ocis
+        app.kubernetes.io/managed-by: Helm
+        app.kubernetes.io/name: ocis
+        app.kubernetes.io/version: 4.0.1
+        helm.sh/chart: ocis-0.5.0
+    spec:
+      automountServiceAccountToken: true
+      containers:
+        - args:
+            - ocdav
+            - server
+          command:
+            - ocis
+          env:
+            - name: MICRO_REGISTRY
+              value: kubernetes
+            - name: MICRO_REGISTRY_ADDRESS
+              value: ""
+            - name: OCDAV_LOG_COLOR
+              value: "false"
+            - name: OCDAV_LOG_LEVEL
+              value: info
+            - name: OCDAV_LOG_PRETTY
+              value: "false"
+            - name: OCDAV_TRACING_ENABLED
+              value: "false"
+            - name: OCDAV_TRACING_TYPE
+              value: jaeger
+            - name: OCDAV_TRACING_ENDPOINT
+              value: ""
+            - name: OCDAV_TRACING_COLLECTOR
+              value: ""
+            - name: OCDAV_DEBUG_PPROF
+              value: "false"
+            - name: OCDAV_HTTP_ADDR
+              value: 0.0.0.0:8080
+            - name: OCDAV_DEBUG_ADDR
+              value: 0.0.0.0:9163
+            - name: OCDAV_PUBLIC_URL
+              value: https://ocis.zoo.budd.ee
+            - name: OCIS_EDITION
+              value: Community
+            - name: OCDAV_INSECURE
+              value: "false"
+            - name: OCDAV_JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  key: jwt-secret
+                  name: jwt-secret
+            - name: OCDAV_MACHINE_AUTH_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  key: machine-auth-api-key
+                  name: machine-auth-api-key
+          image: owncloud/ocis:4.0.1
+          imagePullPolicy: IfNotPresent
+          livenessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /healthz
+              port: metrics-debug
+            initialDelaySeconds: 60
+            periodSeconds: 20
+            timeoutSeconds: 10
+          name: ocdav
+          ports:
+            - containerPort: 8080
+              name: http
+            - containerPort: 9163
+              name: metrics-debug
+          resources: {}
+          securityContext:
+            readOnlyRootFilesystem: true
+            runAsGroup: 1000
+            runAsNonRoot: true
+            runAsUser: 1000
+      nodeSelector: {}
+      securityContext:
+        fsGroup: 1000
+        fsGroupChangePolicy: OnRootMismatch

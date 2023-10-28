@@ -1,0 +1,18 @@
+#@ load("@ytt:data", "data")
+#@ load("@ytt:overlay", "overlay")
+
+#! create namespace resource for each app
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: #@ data.values.meta.app
+
+#! set namespace on all resources to match the app name
+#! most helm charts are not setting the namespace for each document
+#! warn: sometimes apps require multiple namespaces. This is currently not supported.
+#@overlay/match by=overlay.all, expects="1+"
+---
+metadata:
+  #@overlay/match missing_ok=True
+  namespace: #@ data.values.meta.app

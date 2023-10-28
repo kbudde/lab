@@ -1,0 +1,109 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    a8r.io/repository: https://github.com/kbudde/lab.git
+  labels:
+    app.kubernetes.io/instance: ocis
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: ocis
+    app.kubernetes.io/version: 4.0.1
+    helm.sh/chart: ocis-0.5.0
+  name: thumbnails
+  namespace: ocis
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: thumbnails
+  strategy:
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: thumbnails
+        app.kubernetes.io/instance: ocis
+        app.kubernetes.io/managed-by: Helm
+        app.kubernetes.io/name: ocis
+        app.kubernetes.io/version: 4.0.1
+        helm.sh/chart: ocis-0.5.0
+    spec:
+      automountServiceAccountToken: true
+      containers:
+        - args:
+            - thumbnails
+            - server
+          command:
+            - ocis
+          env:
+            - name: MICRO_REGISTRY
+              value: kubernetes
+            - name: MICRO_REGISTRY_ADDRESS
+              value: ""
+            - name: THUMBNAILS_LOG_COLOR
+              value: "false"
+            - name: THUMBNAILS_LOG_LEVEL
+              value: info
+            - name: THUMBNAILS_LOG_PRETTY
+              value: "false"
+            - name: THUMBNAILS_TRACING_ENABLED
+              value: "false"
+            - name: THUMBNAILS_TRACING_TYPE
+              value: jaeger
+            - name: THUMBNAILS_TRACING_ENDPOINT
+              value: ""
+            - name: THUMBNAILS_TRACING_COLLECTOR
+              value: ""
+            - name: THUMBNAILS_DEBUG_PPROF
+              value: "false"
+            - name: THUMBNAILS_GRPC_ADDR
+              value: 0.0.0.0:9185
+            - name: THUMBNAILS_HTTP_ADDR
+              value: 0.0.0.0:9186
+            - name: THUMBNAILS_DEBUG_ADDR
+              value: 0.0.0.0:9189
+            - name: THUMBNAILS_DATA_ENDPOINT
+              value: http://thumbnails:9186/thumbnails/data
+            - name: THUMBNAILS_WEBDAVSOURCE_INSECURE
+              value: "false"
+            - name: THUMBNAILS_CS3SOURCE_INSECURE
+              value: "false"
+            - name: THUMBNAILS_TRANSFER_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  key: thumbnails-transfer-secret
+                  name: thumbnails-transfer-secret
+          image: owncloud/ocis:4.0.1
+          imagePullPolicy: IfNotPresent
+          livenessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /healthz
+              port: metrics-debug
+            initialDelaySeconds: 60
+            periodSeconds: 20
+            timeoutSeconds: 10
+          name: thumbnails
+          ports:
+            - containerPort: 9185
+              name: grpc
+            - containerPort: 9186
+              name: http
+            - containerPort: 9189
+              name: metrics-debug
+          resources: {}
+          securityContext:
+            readOnlyRootFilesystem: true
+            runAsGroup: 1000
+            runAsNonRoot: true
+            runAsUser: 1000
+          volumeMounts:
+            - mountPath: /var/lib/ocis
+              name: thumbnails-data
+      nodeSelector: {}
+      securityContext:
+        fsGroup: 1000
+        fsGroupChangePolicy: OnRootMismatch
+      volumes:
+        - emptyDir: {}
+          name: thumbnails-data

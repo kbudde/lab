@@ -1,0 +1,116 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    a8r.io/repository: https://github.com/kbudde/lab.git
+  labels:
+    app.kubernetes.io/instance: ocis
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: ocis
+    app.kubernetes.io/version: 4.0.1
+    helm.sh/chart: ocis-0.5.0
+  name: settings
+  namespace: ocis
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: settings
+  strategy:
+    type: RollingUpdate
+  template:
+    metadata:
+      annotations:
+        checksum/config: 01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b
+      labels:
+        app: settings
+        app.kubernetes.io/instance: ocis
+        app.kubernetes.io/managed-by: Helm
+        app.kubernetes.io/name: ocis
+        app.kubernetes.io/version: 4.0.1
+        helm.sh/chart: ocis-0.5.0
+    spec:
+      automountServiceAccountToken: true
+      containers:
+        - args:
+            - settings
+            - server
+          command:
+            - ocis
+          env:
+            - name: MICRO_REGISTRY
+              value: kubernetes
+            - name: MICRO_REGISTRY_ADDRESS
+              value: ""
+            - name: SETTINGS_LOG_COLOR
+              value: "false"
+            - name: SETTINGS_LOG_LEVEL
+              value: info
+            - name: SETTINGS_LOG_PRETTY
+              value: "false"
+            - name: SETTINGS_TRACING_ENABLED
+              value: "false"
+            - name: SETTINGS_TRACING_TYPE
+              value: jaeger
+            - name: SETTINGS_TRACING_ENDPOINT
+              value: ""
+            - name: SETTINGS_TRACING_COLLECTOR
+              value: ""
+            - name: SETTINGS_DEBUG_PPROF
+              value: "false"
+            - name: SETTINGS_CACHE_STORE
+              value: memory
+            - name: SETTINGS_HTTP_ADDR
+              value: 0.0.0.0:9190
+            - name: SETTINGS_GRPC_ADDR
+              value: 0.0.0.0:9191
+            - name: SETTINGS_DEBUG_ADDR
+              value: 0.0.0.0:9194
+            - name: SETTINGS_ADMIN_USER_ID
+              valueFrom:
+                secretKeyRef:
+                  key: user-id
+                  name: admin-user
+            - name: SETTINGS_JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  key: jwt-secret
+                  name: jwt-secret
+            - name: OCIS_SYSTEM_USER_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  key: api-key
+                  name: storage-system
+            - name: OCIS_SYSTEM_USER_ID
+              valueFrom:
+                secretKeyRef:
+                  key: user-id
+                  name: storage-system
+          image: owncloud/ocis:4.0.1
+          imagePullPolicy: IfNotPresent
+          livenessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /healthz
+              port: metrics-debug
+            initialDelaySeconds: 60
+            periodSeconds: 20
+            timeoutSeconds: 10
+          name: settings
+          ports:
+            - containerPort: 9190
+              name: http
+            - containerPort: 9191
+              name: grpc
+            - containerPort: 9194
+              name: metrics-debug
+          resources: {}
+          securityContext:
+            readOnlyRootFilesystem: true
+            runAsGroup: 1000
+            runAsNonRoot: true
+            runAsUser: 1000
+      nodeSelector: {}
+      securityContext:
+        fsGroup: 1000
+        fsGroupChangePolicy: OnRootMismatch

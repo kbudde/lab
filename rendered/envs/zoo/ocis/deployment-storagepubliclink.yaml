@@ -1,0 +1,99 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    a8r.io/repository: https://github.com/kbudde/lab.git
+  labels:
+    app.kubernetes.io/instance: ocis
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: ocis
+    app.kubernetes.io/version: 4.0.1
+    helm.sh/chart: ocis-0.5.0
+  name: storagepubliclink
+  namespace: ocis
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: storagepubliclink
+  strategy:
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: storagepubliclink
+        app.kubernetes.io/instance: ocis
+        app.kubernetes.io/managed-by: Helm
+        app.kubernetes.io/name: ocis
+        app.kubernetes.io/version: 4.0.1
+        helm.sh/chart: ocis-0.5.0
+    spec:
+      automountServiceAccountToken: true
+      containers:
+        - args:
+            - storage-publiclink
+            - server
+          command:
+            - ocis
+          env:
+            - name: MICRO_REGISTRY
+              value: kubernetes
+            - name: MICRO_REGISTRY_ADDRESS
+              value: ""
+            - name: STORAGE_PUBLICLINK_LOG_COLOR
+              value: "false"
+            - name: STORAGE_PUBLICLINK_LOG_LEVEL
+              value: info
+            - name: STORAGE_PUBLICLINK_LOG_PRETTY
+              value: "false"
+            - name: STORAGE_PUBLICLINK_TRACING_ENABLED
+              value: "false"
+            - name: STORAGE_PUBLICLINK_TRACING_TYPE
+              value: jaeger
+            - name: STORAGE_PUBLICLINK_TRACING_ENDPOINT
+              value: ""
+            - name: STORAGE_PUBLICLINK_TRACING_COLLECTOR
+              value: ""
+            - name: STORAGE_PUBLICLINK_DEBUG_PPROF
+              value: "false"
+            - name: STORAGE_PUBLICLINK_GRPC_ADDR
+              value: 0.0.0.0:9178
+            - name: STORAGE_PUBLICLINK_DEBUG_ADDR
+              value: 0.0.0.0:9179
+            - name: STORAGE_PUBLICLINK_JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  key: jwt-secret
+                  name: jwt-secret
+          image: owncloud/ocis:4.0.1
+          imagePullPolicy: IfNotPresent
+          livenessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /healthz
+              port: metrics-debug
+            initialDelaySeconds: 60
+            periodSeconds: 20
+            timeoutSeconds: 10
+          name: storagepubliclink
+          ports:
+            - containerPort: 9178
+              name: grpc
+            - containerPort: 9179
+              name: metrics-debug
+          resources: {}
+          securityContext:
+            readOnlyRootFilesystem: true
+            runAsGroup: 1000
+            runAsNonRoot: true
+            runAsUser: 1000
+          volumeMounts:
+            - mountPath: /tmp
+              name: tmp-volume
+      nodeSelector: {}
+      securityContext:
+        fsGroup: 1000
+        fsGroupChangePolicy: OnRootMismatch
+      volumes:
+        - emptyDir: {}
+          name: tmp-volume

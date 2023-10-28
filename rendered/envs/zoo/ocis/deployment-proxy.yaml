@@ -1,0 +1,119 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    a8r.io/repository: https://github.com/kbudde/lab.git
+  labels:
+    app.kubernetes.io/instance: ocis
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: ocis
+    app.kubernetes.io/version: 4.0.1
+    helm.sh/chart: ocis-0.5.0
+  name: proxy
+  namespace: ocis
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: proxy
+  strategy:
+    type: RollingUpdate
+  template:
+    metadata:
+      annotations:
+        checksum/config: 49c4c136fb814854bc396a864aaf06068234ffe2611dafa9888e78b6e9f7acb8
+      labels:
+        app: proxy
+        app.kubernetes.io/instance: ocis
+        app.kubernetes.io/managed-by: Helm
+        app.kubernetes.io/name: ocis
+        app.kubernetes.io/version: 4.0.1
+        helm.sh/chart: ocis-0.5.0
+    spec:
+      automountServiceAccountToken: true
+      containers:
+        - args:
+            - proxy
+            - server
+          command:
+            - ocis
+          env:
+            - name: MICRO_REGISTRY
+              value: kubernetes
+            - name: MICRO_REGISTRY_ADDRESS
+              value: ""
+            - name: PROXY_LOG_COLOR
+              value: "false"
+            - name: PROXY_LOG_LEVEL
+              value: info
+            - name: PROXY_LOG_PRETTY
+              value: "false"
+            - name: PROXY_TRACING_ENABLED
+              value: "false"
+            - name: PROXY_TRACING_TYPE
+              value: jaeger
+            - name: PROXY_TRACING_ENDPOINT
+              value: ""
+            - name: PROXY_TRACING_COLLECTOR
+              value: ""
+            - name: PROXY_DEBUG_PPROF
+              value: "false"
+            - name: PROXY_HTTP_ADDR
+              value: 0.0.0.0:9200
+            - name: PROXY_DEBUG_ADDR
+              value: 0.0.0.0:9205
+            - name: PROXY_ENABLE_BASIC_AUTH
+              value: "true"
+            - name: PROXY_OIDC_ISSUER
+              value: https://ocis.zoo.budd.ee
+            - name: PROXY_TLS
+              value: "false"
+            - name: PROXY_OIDC_INSECURE
+              value: "false"
+            - name: PROXY_OIDC_USERINFO_CACHE_STORE
+              value: ""
+            - name: PROXY_OIDC_USERINFO_CACHE_STORE_NODES
+              value: ""
+            - name: PROXY_JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  key: jwt-secret
+                  name: jwt-secret
+            - name: PROXY_MACHINE_AUTH_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  key: machine-auth-api-key
+                  name: machine-auth-api-key
+          image: owncloud/ocis:4.0.1
+          imagePullPolicy: IfNotPresent
+          livenessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /healthz
+              port: metrics-debug
+            initialDelaySeconds: 60
+            periodSeconds: 20
+            timeoutSeconds: 10
+          name: proxy
+          ports:
+            - containerPort: 9200
+              name: http
+            - containerPort: 9205
+              name: metrics-debug
+          resources: {}
+          securityContext:
+            readOnlyRootFilesystem: true
+            runAsGroup: 1000
+            runAsNonRoot: true
+            runAsUser: 1000
+          volumeMounts:
+            - mountPath: /etc/ocis
+              name: configs
+      nodeSelector: {}
+      securityContext:
+        fsGroup: 1000
+        fsGroupChangePolicy: OnRootMismatch
+      volumes:
+        - configMap:
+            name: proxy-config
+          name: configs

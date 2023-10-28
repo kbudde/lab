@@ -1,0 +1,9 @@
+securityContext:
+  allowPrivilegeEscalation: false
+  capabilities:
+    drop:
+    - all
+  privileged: false
+  runAsGroup: 1000
+  runAsNonRoot: true
+  runAsUser: 1000
