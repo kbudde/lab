@@ -5,6 +5,7 @@ environment:
   applications:
   - proto: ocis
   - proto: adguard-home
+  - proto: octopi
 shared:
   domain: "zoo.budd.ee"
 

@@ -1,0 +1,19 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    a8r.io/repository: git@github.com:kbudde/lab.git
+  name: octopi
+  namespace: octopi
+spec:
+  rules:
+    - host: octopi.zoo.budd.ee
+      http:
+        paths:
+          - backend:
+              service:
+                name: octopi
+                port:
+                  number: 80
+            path: /
+            pathType: ImplementationSpecific

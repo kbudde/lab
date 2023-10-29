@@ -1,0 +1,19 @@
+#@ load("@ytt:data", "data")
+#@ shared = data.values.shared
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: octopi
+spec:
+  rules:
+    - host: #@ "octopi." + shared.domain
+      http:
+        paths:
+          - backend:
+              service:
+                name: octopi
+                port:
+                  number: 80
+            path: /
+            pathType: ImplementationSpecific

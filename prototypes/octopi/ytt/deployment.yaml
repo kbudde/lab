@@ -1,0 +1,68 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: octopi
+  namespace: octopi
+spec:
+  selector:
+    matchLabels:
+      app: octopi
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: octopi
+    spec:
+      containers:
+      - env:
+        - name: ENABLE_MJPG_STREAMER
+          value: "true"
+        image: octoprint/octoprint:1.9.3
+        imagePullPolicy: IfNotPresent
+        name: octopi
+        ports:
+        - containerPort: 80
+          name: web
+          protocol: TCP
+        securityContext:
+          privileged: true
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+        volumeMounts:
+        - mountPath: /octoprint
+          name: octoprint
+        - mountPath: /dev/ttyACM0
+          name: printer
+        - mountPath: /dev/ttyUSB0
+          name: printerusb
+        - mountPath: /dev/video0
+          name: dev-video0
+        - mountPath: /dev/video1
+          name: dev-video1
+      dnsPolicy: ClusterFirst
+      nodeName: ant
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      terminationGracePeriodSeconds: 30
+      volumes:
+      - name: octoprint
+        persistentVolumeClaim:
+          claimName: octopi
+      - hostPath:
+          path: /dev/ttyACM0
+          type: ""
+        name: printer
+      - hostPath:
+          path: /dev/ttyUSB0
+          type: ""
+        name: printerusb
+      - hostPath:
+          path: /dev/video0
+          type: ""
+        name: dev-video0
+      - hostPath:
+          path: /dev/video1
+          type: ""
+        name: dev-video1
