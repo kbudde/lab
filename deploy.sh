@@ -1,10 +1,9 @@
 #!/bin/env bash
 
 base=rendered/envs/zoo
-apps=$(ls $base)
 
 export AVP_TYPE=sops
 
-for app in $apps; do
+for app in "$base"/*; do
   argocd-vault-plugin generate "$base/$app" | kapp deploy -y -c -a "$app" -f -
 done
