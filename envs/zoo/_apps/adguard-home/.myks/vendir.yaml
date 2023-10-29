@@ -1,0 +1,11 @@
+apiVersion: vendir.k14s.io/v1alpha1
+kind: Config
+directories:
+- path: charts/adguard-home
+  contents:
+  - path: .
+    helmChart:
+      name: adguard-home
+      version: 0.1.0
+      repository:
+        url: https://helm-charts.rm3l.org

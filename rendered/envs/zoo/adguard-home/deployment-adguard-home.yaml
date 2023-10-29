@@ -1,0 +1,114 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    a8r.io/repository: git@github.com:kbudde/lab.git
+  labels:
+    app.kubernetes.io/instance: adguard-home
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: adguard-home
+    app.kubernetes.io/version: v0.107.2
+    helm.sh/chart: adguard-home-0.1.0
+  name: adguard-home
+  namespace: adguard-home
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: adguard-home
+      app.kubernetes.io/name: adguard-home
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      annotations:
+        checksum/secret: f7dc85dd7ae06be50a0f2735509f0fc6a54cf85683a68869ee3ac410f7ebd81b
+      labels:
+        app.kubernetes.io/instance: adguard-home
+        app.kubernetes.io/name: adguard-home
+    spec:
+      containers:
+        - image: adguard/adguardhome:v0.107.2
+          imagePullPolicy: IfNotPresent
+          name: adguard-home
+          ports:
+            - containerPort: 53
+              name: dns-tcp
+              protocol: TCP
+            - containerPort: 53
+              name: dns-udp
+              protocol: UDP
+            - containerPort: 80
+              name: http
+              protocol: TCP
+            - containerPort: 443
+              name: https
+              protocol: TCP
+            - containerPort: 443
+              name: https-udp
+              protocol: UDP
+            - containerPort: 3000
+              name: admin
+              protocol: TCP
+            - containerPort: 853
+              name: dns-over-tls
+              protocol: TCP
+            - containerPort: 784
+              name: dns-over-quic-1
+              protocol: UDP
+            - containerPort: 853
+              name: dns-over-quic-2
+              protocol: UDP
+            - containerPort: 8853
+              name: dns-over-quic-3
+              protocol: UDP
+            - containerPort: 5443
+              name: dnscrypt
+              protocol: TCP
+            - containerPort: 5443
+              name: dnscrypt-udp
+              protocol: UDP
+          resources: {}
+          securityContext: {}
+          volumeMounts:
+            - mountPath: /opt/adguardhome/work
+              name: data-vol
+              subPath: work
+            - mountPath: /opt/adguardhome/conf
+              name: data-vol
+              subPath: conf
+      initContainers:
+        - command:
+            - /bin/sh
+            - -c
+            - |
+              if ls /opt/adguardhome/conf/AdGuardHome.yaml; then
+                echo "Existing file will NOT be altered: /opt/adguardhome/conf/AdGuardHome.yaml"
+              else
+                cp -v /var/adguardhome-bootstrap/AdGuardHome.yaml /opt/adguardhome/conf/AdGuardHome.yaml
+              fi
+          image: busybox:1.35
+          imagePullPolicy: Always
+          name: configurator
+          resources:
+            limits:
+              cpu: 100m
+              memory: 128Mi
+            requests:
+              cpu: 100m
+              memory: 64Mi
+          volumeMounts:
+            - mountPath: /var/adguardhome-bootstrap
+              name: bootstrap-config-vol
+            - mountPath: /opt/adguardhome/conf
+              name: data-vol
+              subPath: conf
+      securityContext: {}
+      serviceAccountName: adguard-home
+      volumes:
+        - name: bootstrap-config-vol
+          secret:
+            secretName: adguard-home
+        - name: data-vol
+          persistentVolumeClaim:
+            claimName: adguard-home

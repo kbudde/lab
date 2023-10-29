@@ -4,6 +4,7 @@ environment:
   id: zoo
   applications:
   - proto: ocis
+  - proto: adguard-home
 shared:
   domain: "zoo.budd.ee"
 

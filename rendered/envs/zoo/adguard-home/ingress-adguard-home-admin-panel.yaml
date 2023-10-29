@@ -1,0 +1,25 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    a8r.io/repository: git@github.com:kbudde/lab.git
+  labels:
+    app.kubernetes.io/instance: adguard-home
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: adguard-home
+    app.kubernetes.io/version: v0.107.2
+    helm.sh/chart: adguard-home-0.1.0
+  name: adguard-home-admin-panel
+  namespace: adguard-home
+spec:
+  rules:
+    - host: admin-adguard.zoo.budd.ee
+      http:
+        paths:
+          - backend:
+              service:
+                name: adguard-home-admin-panel
+                port:
+                  number: 3000
+            path: /
+            pathType: ImplementationSpecific

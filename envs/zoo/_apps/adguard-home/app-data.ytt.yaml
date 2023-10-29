@@ -1,0 +1,4 @@
+#@data/values
+---
+application:
+  loadbalancerIp: 192.168.178.222

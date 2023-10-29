@@ -1,0 +1,42 @@
+#@ load("@ytt:base64", "base64")
+#@ load("@ytt:data", "data")
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: adguard-dns-tcp
+  annotations:
+    metallb.universe.tf/allow-shared-ip: #@ data.values.meta.app
+spec:
+  type: LoadBalancer
+  loadBalancerIP: #@ data.values.application.loadbalancerIp
+  externalTrafficPolicy: Local
+  selector:
+    app.kubernetes.io/instance: adguard-home
+    app.kubernetes.io/name: adguard-home
+  ports:
+  - name: dns-tcp
+    port: 53
+    targetPort: 53
+    protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: adguard-dns-udp
+  annotations:
+    metallb.universe.tf/allow-shared-ip: #@ data.values.meta.app
+spec:
+  type: LoadBalancer
+  loadBalancerIP: #@ data.values.application.loadbalancerIp
+  externalTrafficPolicy: Local
+  selector:
+    app.kubernetes.io/instance: adguard-home
+    app.kubernetes.io/name: adguard-home
+  ports:
+  - name: dns-udp
+    port: 53
+    targetPort: 53
+    protocol: UDP
+

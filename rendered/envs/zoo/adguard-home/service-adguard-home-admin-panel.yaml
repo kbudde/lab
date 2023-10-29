@@ -1,0 +1,22 @@
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    a8r.io/repository: git@github.com:kbudde/lab.git
+  labels:
+    app.kubernetes.io/instance: adguard-home
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: adguard-home
+    app.kubernetes.io/version: v0.107.2
+    helm.sh/chart: adguard-home-0.1.0
+  name: adguard-home-admin-panel
+  namespace: adguard-home
+spec:
+  ports:
+    - port: 3000
+      protocol: TCP
+      targetPort: admin
+  selector:
+    app.kubernetes.io/instance: adguard-home
+    app.kubernetes.io/name: adguard-home
+  type: ClusterIP

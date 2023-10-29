@@ -1,0 +1,6 @@
+#@data/values-schema
+---
+application:
+  #@overlay/match missing_ok=True
+  #@schema/validation min_len=1
+  loadbalancerIp: ""

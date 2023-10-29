@@ -6,6 +6,6 @@ application:
   #!          When changed, renovate won't be able to detect the new version.
   #!          See renovate.json for more details.
   #! renovate: datasource=helm
-  name: httpbingo
-  url: https://estahn.github.io/charts
-  version: 0.1.1
+  name: adguard-home
+  url: https://helm-charts.rm3l.org
+  version: 0.1.0

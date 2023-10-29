@@ -1,0 +1,83 @@
+#@ load("@ytt:data", "data")
+#@ application = data.values.application
+#@ shared = data.values.shared
+#@ environment = data.values.environment
+---
+
+strategy:
+  type: Recreate
+bootstrapConfig:
+  users: []
+  dns:
+    enable_dnssec: true
+  filters:
+  - enabled: true
+    url: https://adguardteam.github.io/AdGuardSDNSFilter/Filters/filter.txt
+    name: AdGuard DNS filter
+    id: 1
+  - enabled: true
+    url: https://adaway.org/hosts.txt
+    name: AdAway Default Blocklist
+    id: 2
+  - enabled: true
+    url: https://raw.githubusercontent.com/crazy-max/WindowsSpyBlocker/master/data/hosts/spy.txt
+    name: WindowsSpyBlocker - Hosts spy rules
+    id: 1641249001
+  - enabled: true
+    url: https://abp.oisd.nl/basic/
+    name: OISD Blocklist Basic
+    id: 1641249002
+  - enabled: true
+    url: https://raw.githubusercontent.com/Perflyst/PiHoleBlocklist/master/SmartTV-AGH.txt
+    name: Perflyst and Dandelion Sprout's Smart-TV Blocklist
+    id: 1641249003
+  - enabled: true
+    url: https://raw.githubusercontent.com/DandelionSprout/adfilt/master/GameConsoleAdblockList.txt
+    name: Game Console
+
+ingresses:
+  http:
+    enabled: true
+    hosts:
+    - host: #@ "adguard." + shared.domain
+      paths:
+      - path: /
+        pathType: ImplementationSpecific
+
+  adminPanel:
+    enabled: true
+    hosts:
+    - host: #@ "admin-adguard." + shared.domain
+      paths:
+      - path: /
+        pathType: ImplementationSpecific
+
+
+services:
+  adminPanel:
+    type: ClusterIP
+    port: 3000
+  http:
+    type: ClusterIP
+    port: 80
+  https:
+    enabled: false
+    type: ClusterIP
+    port: 443
+  dns:
+    enabled: false
+    type: NodePort
+    port: 53
+  dnsOverTls:
+    enabled: false
+    type: NodePort
+    port: 853
+  dnsOverQuic:
+    enabled: false
+    type: NodePort
+    port1: 784
+    port2: 8853
+  dnscrypt:
+    enabled: false
+    type: NodePort
+    port: 5443
