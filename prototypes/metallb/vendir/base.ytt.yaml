@@ -1,0 +1,16 @@
+#@ load("@ytt:data", "data")
+
+#@ app = data.values.application
+---
+apiVersion: vendir.k14s.io/v1alpha1
+kind: Config
+directories:
+  - path: #@ "ytt/"
+    contents:
+      - path: #@ app.path
+        git:
+          url: #@ app.url
+          ref: #@ "v" + app.version
+        newRootPath: #@ app.path
+        includePaths:
+        - #@ app.path +"/metallb-native.yaml"

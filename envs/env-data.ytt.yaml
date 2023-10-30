@@ -14,3 +14,7 @@ shared:
   domain: ""
 argocd:
   enabled: false
+application:
+  #@overlay/match missing_ok=True
+  namespace:
+    create: true

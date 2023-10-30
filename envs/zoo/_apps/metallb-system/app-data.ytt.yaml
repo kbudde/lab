@@ -1,0 +1,6 @@
+#@data/values
+---
+application:
+  namespace:
+    create: false
+

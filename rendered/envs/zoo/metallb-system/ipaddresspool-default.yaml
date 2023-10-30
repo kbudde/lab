@@ -1,0 +1,12 @@
+apiVersion: metallb.io/v1beta1
+kind: IPAddressPool
+metadata:
+  annotations:
+    a8r.io/repository: git@github.com:kbudde/lab.git
+  name: default
+  namespace: metallb-system
+spec:
+  addresses:
+    - 192.168.178.220-192.168.178.240
+  autoAssign: true
+  avoidBuggyIPs: false

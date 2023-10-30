@@ -6,6 +6,8 @@ environment:
   - proto: ocis
   - proto: adguard-home
   - proto: octopi
+  - proto: metallb
+    name: metallb-system
 shared:
   domain: "zoo.budd.ee"
 
