@@ -1,14 +1,19 @@
 #@ load("@ytt:data", "data")
 #@ load("@ytt:overlay", "overlay")
 
+#@ set_ns=data.values.myks.context.app
+#@ if data.values.application.namespace.namespace:
+#@   set_ns=data.values.application.namespace.namespace
+#@ end
+
 #! create namespace resource for each app
-#@ if data.values.application.namespace.create:
+#@ if/end data.values.application.namespace.create:
 ---
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: #@ data.values.meta.app
-#@ end
+  name: #@ set_ns
+
 
 #! set namespace on all resources to match the app name
 #! most helm charts are not setting the namespace for each document
@@ -17,4 +22,4 @@ metadata:
 ---
 metadata:
   #@overlay/match missing_ok=True
-  namespace: #@ data.values.meta.app
+  namespace: #@ set_ns
