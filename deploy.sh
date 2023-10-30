@@ -5,5 +5,6 @@ base=rendered/envs/zoo
 export AVP_TYPE=sops
 
 for app in "$base"/*; do
-  argocd-vault-plugin generate "$base/$app" | kapp deploy -y -c -a "$app" -f -
+  echo "argocd-vault-plugin generate \"$app\" | kapp deploy  -c -a \"${app#"$base/"}\" -f -"
+  argocd-vault-plugin generate "$app" | kapp deploy -y -c -a "${app#"$base/"}" -f -
 done
