@@ -1,0 +1,5 @@
+#@data/values
+---
+application:
+  namespace:
+    namespace: traefik #! expected to be in the traefik namespace to create certs.

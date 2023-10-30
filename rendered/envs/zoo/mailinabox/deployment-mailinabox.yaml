@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    a8r.io/repository: git@github.com:kbudde/lab.git
+  labels:
+    app: mailinabox
+  name: mailinabox
+  namespace: traefik
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mailinabox
+  strategy:
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: mailinabox
+    spec:
+      containers:
+        - envFrom:
+            - secretRef:
+                name: mailinabox
+          image: kbudde/mailinabox-dnsapi:main
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+          name: mailinabox
+          ports:
+            - containerPort: 8080
+              name: http
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+          resources:
+            limits:
+              cpu: 50m
+              memory: 10Mi
+            requests:
+              cpu: 50m
+              memory: 10Mi

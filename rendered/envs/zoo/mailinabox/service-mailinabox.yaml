@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    a8r.io/repository: git@github.com:kbudde/lab.git
+  labels:
+    app: mailinabox
+  name: mailinabox
+  namespace: traefik
+spec:
+  ports:
+    - name: "8080"
+      port: 8080
+      protocol: TCP
+      targetPort: 8080
+  selector:
+    app: mailinabox
+  type: ClusterIP

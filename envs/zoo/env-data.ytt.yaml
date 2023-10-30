@@ -8,6 +8,7 @@ environment:
   - proto: octopi
   - proto: metallb
     name: metallb-system
+  - proto: mailinabox
 shared:
   domain: "zoo.budd.ee"
 

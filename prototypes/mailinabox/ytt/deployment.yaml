@@ -1,0 +1,44 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: mailinabox
+  name: mailinabox
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mailinabox
+  strategy:
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: mailinabox
+    spec:
+      containers:
+      - image: kbudde/mailinabox-dnsapi:main
+        name: mailinabox
+        ports:
+        - name: http
+          containerPort: 8080
+        readinessProbe:
+          httpGet:
+            port: http
+            path: /healthz
+        livenessProbe:
+          httpGet:
+            port: http
+            path: /healthz
+        envFrom:
+          - secretRef:
+              name: mailinabox
+        resources:
+          limits:
+            cpu: "50m"
+            memory: "10Mi"
+          requests:
+            cpu: "50m"
+            memory: "10Mi"
+
