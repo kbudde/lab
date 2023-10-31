@@ -8,7 +8,7 @@ application:
   #! renovate: datasource=helm
   name: metallb
   url: https://github.com/metallb/metallb/
-  version: 0.13.11
+  version: 0.13.12
   path: config/manifests/
   files:
     - metallb-native.yaml
