@@ -1,0 +1,67 @@
+{{ define "agent.config.kube_state_metrics" }}
+// Kube State Metrics
+discovery.relabel "kube_state_metrics" {
+  targets = discovery.kubernetes.services.targets
+{{- if (index .Values "kube-state-metrics").enabled }}
+  rule {
+    source_labels = ["__meta_kubernetes_service_label_app_kubernetes_io_instance"]
+    regex = "{{ .Release.Name }}"
+    action = "keep"
+  }
+{{- end }}
+  {{- range $k, $v := (index .Values.metrics "kube-state-metrics").labelMatchers }}
+  rule {
+    source_labels = ["__meta_kubernetes_service_label_{{ $k | replace "." "_" | replace "/" "_" }}"]
+    regex = "{{ $v }}"
+    action = "keep"
+  }
+  {{- end }}
+  rule {
+    source_labels = ["__meta_kubernetes_service_port_name"]
+    regex = "{{- (index .Values.metrics "kube-state-metrics").service.port -}}"
+    action = "keep"
+  }
+{{- if .Values.metrics.extraRelabelingRules }}
+{{ .Values.metrics.extraRelabelingRules | indent 2 }}
+{{- end }}
+{{- if (index .Values.metrics "kube-state-metrics").extraRelabelingRules }}
+{{ (index .Values.metrics "kube-state-metrics").extraRelabelingRules | indent 2 }}
+{{- end }}
+}
+
+prometheus.scrape "kube_state_metrics" {
+  job_name   = "integrations/kubernetes/kube-state-metrics"
+  targets    = discovery.relabel.kube_state_metrics.output
+  scrape_interval = {{ (index .Values.metrics "kube-state-metrics").scrapeInterval | default .Values.metrics.scrapeInterval | quote }}
+{{- if (index .Values "grafana-agent").agent.clustering.enabled }}
+  clustering {
+    enabled = true
+  }
+{{- end }}
+{{- if (index .Values.metrics "kube-state-metrics").service.isTLS }}
+  scheme     = "https"
+  bearer_token_file = "/var/run/secrets/kubernetes.io/serviceaccount/token"
+  tls_config {
+    insecure_skip_verify = true
+  }
+{{- end }}
+  forward_to = [prometheus.relabel.kube_state_metrics.receiver]
+}
+
+prometheus.relabel "kube_state_metrics" {
+{{- if (index .Values.metrics "kube-state-metrics").allowList }}
+  rule {
+    source_labels = ["__name__"]
+    regex = "up|{{ join "|" (index .Values.metrics "kube-state-metrics").allowList }}"
+    action = "keep"
+  }
+{{- end }}
+{{- if .Values.metrics.extraMetricRelabelingRules }}
+{{ .Values.metrics.extraMetricRelabelingRules | indent 2 }}
+{{- end }}
+{{- if (index .Values.metrics "kube-state-metrics").extraMetricRelabelingRules }}
+{{ (index .Values.metrics "kube-state-metrics").extraMetricRelabelingRules | indent 2 }}
+{{- end }}
+  forward_to = [prometheus.relabel.metrics_service.receiver]
+}
+{{ end }}

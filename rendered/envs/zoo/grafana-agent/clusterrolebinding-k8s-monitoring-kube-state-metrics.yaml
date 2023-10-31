@@ -1,0 +1,23 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  annotations:
+    a8r.io/repository: git@github.com:kbudde/lab.git
+  labels:
+    app.kubernetes.io/component: metrics
+    app.kubernetes.io/instance: k8s-monitoring
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: kube-state-metrics
+    app.kubernetes.io/part-of: kube-state-metrics
+    app.kubernetes.io/version: 2.10.0
+    helm.sh/chart: kube-state-metrics-5.14.0
+  name: k8s-monitoring-kube-state-metrics
+  namespace: grafana-agent
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: k8s-monitoring-kube-state-metrics
+subjects:
+  - kind: ServiceAccount
+    name: k8s-monitoring-kube-state-metrics
+    namespace: grafana-agent

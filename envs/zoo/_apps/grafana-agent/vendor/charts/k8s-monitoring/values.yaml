@@ -1,0 +1,741 @@
+# Cluster settings
+cluster:
+  # -- (string) (required) The name of this cluster, which will be set in all labels
+  name: ""
+
+  # -- (string) The Kubernetes service. Change this if your cluster DNS is configured differently than the default.
+  kubernetesAPIService: kubernetes.default.svc.cluster.local:443
+
+  # -- (string) The specific platform for this cluster. Will enable compatibility changes for some platforms. Supported options: (empty) or "openshift".
+  platform: ""
+
+externalServices:
+  # Connection information for Prometheus
+  prometheus:
+    # TODO: Add the ability to reference a pre-existing secret
+    # -- (string) (required) Prometheus host where metrics will be sent
+    host: ""
+
+    # -- (string) The type of server protocol for writing metrics
+    # Options:
+    #   * "remote_write" will use Prometheus Remote Write
+    #   * "otlp" will use OTLP
+    #   * "otlphttp" will use OTLP HTTP
+    protocol: "remote_write"
+    # -- (string) HTTP proxy to proxy requests to Prometheus through.
+    proxyURL: ""
+    # -- Prometheus metrics query endpoint. Preset for Grafana Cloud Metrics instances.
+    queryEndpoint: /api/prom/api/v1/query
+    # -- Prometheus metrics write endpoint. Preset for Grafana Cloud Metrics instances.
+    writeEndpoint: /api/prom/push
+    # -- Custom labels to be added to all time series
+    externalLabels: {}
+    # -- (string) Rule blocks to be added to the write_relabel_config block of the prometheus.remote_write component.
+    # See https://grafana.com/docs/agent/latest/flow/reference/components/prometheus.remote_write/#write_relabel_config-block
+    writeRelabelConfigRules:
+
+    # -- (string) (optional) Sets the X-Scope-OrgID header when sending metrics
+    tenantId: ""
+
+    # Authenticate to Prometheus using basic authentication
+    basicAuth:
+      # -- (string) Prometheus basic auth username
+      username: ""
+      # -- (string) Prometheus basic auth password
+      password: ""
+
+    # -- TLS setting to configure for the metrics service.
+    # For remoteWrite protocol, refer to https://grafana.com/docs/agent/latest/flow/reference/components/prometheus.remote_write/#tls_config-block
+    # For otlp protocol, refer to https://grafana.com/docs/agent/latest/flow/reference/components/otelcol.exporter.otlp/#tls-block
+    # For otlphttp protocol, refer to https://grafana.com/docs/agent/latest/flow/reference/components/otelcol.exporter.otlphttp/#tls-block
+    tls: {}
+
+    # Metric processor settings. Only applies when protocol is "otlp" or "otlphttp"
+    processors:
+      batch:
+        # -- Amount of data to buffer before flushing the batch.
+        size: 8192
+        # -- Upper limit of a batch size. When set to 0, there is no upper limit.
+        maxSize: 0
+        # -- How long to wait before flushing the batch.
+        timeout: 2s
+      memoryLimiter:
+        # -- Use a memory limiter.
+        enabled: false
+        # -- How often to check memory usage.
+        checkInterval: 1s
+        # -- Maximum amount of memory targeted to be allocated by the process heap.
+        limit: 0MiB
+
+  # Connection information for Grafana Loki
+  loki:
+    # TODO: Add the ability to reference a pre-existing secret
+    # -- (string) (required) Loki host where logs and events will be sent
+    host: ""
+    # -- (string) HTTP proxy to proxy requests to Loki through.
+    proxyURL: ""
+    # -- Loki logs write endpoint
+    writeEndpoint: /loki/api/v1/push
+    # -- Custom labels to be added to all logs and events
+    externalLabels: {}
+
+    # -- (string) (optional) Loki tenant ID
+    tenantId: ""
+
+    # Authenticate to Loki using basic authentication
+    basicAuth:
+      # -- (string) Loki basic auth username
+      username: ""
+      # -- (string) Loki basic auth password
+      password: ""
+
+  # Connection information for Grafana Tempo
+  tempo:
+    # -- (string) (required) Tempo host where traces will be sent
+    host: ""
+
+    # -- (string) (optional) Tempo tenant ID
+    tenantId: ""
+
+    # Authenticate to Tempo using basic authentication
+    basicAuth:
+      # -- (string) Tempo basic auth username
+      username: ""
+      # -- (string) Tempo basic auth password
+      password: ""
+
+    # -- (string) Define the TLS block. See https://grafana.com/docs/agent/latest/flow/reference/components/otelcol.exporter.otlp/#tls-block for options.
+    # Example:
+    # tlsOptions: insecure = true
+    tlsOptions: ""
+
+# Settings related to capturing and forwarding metrics
+metrics:
+  # -- Capture and forward metrics
+  enabled: true
+
+  # -- (string) How frequently to scrape metrics
+  scrapeInterval: 60s
+
+  # -- (string) Rule blocks to be added to the discovery.relabel component for all metric sources.
+  # See https://grafana.com/docs/agent/latest/flow/reference/components/discovery.relabel/#rule-block
+  extraRelabelingRules:
+
+  # -- (string) Rule blocks to be added to the prometheus.relabel component for all metric sources.
+  # See https://grafana.com/docs/agent/latest/flow/reference/components/prometheus.relabel/#rule-block
+  extraMetricRelabelingRules:
+
+  # Metrics from Grafana Agent
+  agent:
+    # -- Scrape metrics from Grafana Agent
+    enabled: true
+
+    # -- (string) How frequently to scrape metrics from Grafana Agent.
+    # Overrides metrics.scrapeInterval
+    # @default -- 60s
+    scrapeInterval:
+
+    # -- Label matchers used by the Grafana Agent to select Grafana Agent pods
+    labelMatchers:
+      app.kubernetes.io/name: grafana-agent.*
+
+    # -- (string) Rule blocks to be added to the discovery.relabel component for Grafana Agent.
+    # See https://grafana.com/docs/agent/latest/flow/reference/components/discovery.relabel/#rule-block
+    extraRelabelingRules:
+
+    # -- (string) Rule blocks to be added to the prometheus.relabel component for Grafana Agent.
+    # See https://grafana.com/docs/agent/latest/flow/reference/components/prometheus.relabel/#rule-block
+    extraMetricRelabelingRules:
+
+    # -- The list of Grafana Agent metrics that will be scraped by the Agent
+    # @default -- See [Allow List for Grafana Agent](#allow-list-for-grafana-agent)
+    allowList:
+    - agent_build_info
+
+  # Cluster object metrics from Kube State Metrics
+  kube-state-metrics:
+    # -- Scrape cluster object metrics from Kube State Metrics
+    enabled: true
+
+    # -- (string) How frequently to scrape metrics from Kube State Metrics.
+    # Overrides metrics.scrapeInterval
+    # @default -- 60s
+    scrapeInterval:
+
+    # -- Label matchers used by the Grafana Agent to select the Kube State Metrics service
+    labelMatchers:
+      app.kubernetes.io/name: kube-state-metrics
+
+    # -- (string) Rule blocks to be added to the discovery.relabel component for Kube State Metrics.
+    # See https://grafana.com/docs/agent/latest/flow/reference/components/discovery.relabel/#rule-block
+    extraRelabelingRules:
+
+    # -- (string) Rule blocks to be added to the prometheus.relabel component for Kube State Metrics.
+    # See https://grafana.com/docs/agent/latest/flow/reference/components/prometheus.relabel/#rule-block
+    extraMetricRelabelingRules:
+
+    # Kube State Metrics service settings
+    service:
+      # -- Name of the metrics port
+      port: http
+      # -- Does this port use TLS?
+      isTLS: false
+
+    # -- The list of Kube State Metrics metrics that will be scraped by the Agent
+    # @default -- See [Allow List for Kube State Metrics](#allow-list-for-kube-state-metrics)
+    allowList:
+    - kube_daemonset.*
+    - kube_deployment_metadata_generation
+    - kube_deployment_spec_replicas
+    - kube_deployment_status_observed_generation
+    - kube_deployment_status_replicas_available
+    - kube_deployment_status_replicas_updated
+    - kube_horizontalpodautoscaler_spec_max_replicas
+    - kube_horizontalpodautoscaler_spec_min_replicas
+    - kube_horizontalpodautoscaler_status_current_replicas
+    - kube_horizontalpodautoscaler_status_desired_replicas
+    - kube_job.*
+    - kube_namespace_status_phase
+    - kube_namespace_status_phase
+    - kube_node.*
+    - kube_persistentvolumeclaim_resource_requests_storage_bytes
+    - kube_pod_container_info
+    - kube_pod_container_resource_limits
+    - kube_pod_container_resource_requests
+    - kube_pod_container_status_restarts_total
+    - kube_pod_container_status_waiting_reason
+    - kube_pod_container_status_waiting_reason
+    - kube_pod_info
+    - kube_pod_owner
+    - kube_pod_start_time
+    - kube_pod_status_phase
+    - kube_pod_status_phase
+    - kube_pod_status_reason
+    - kube_replicaset.*
+    - kube_resourcequota
+    - kube_statefulset.*
+
+  # Node metrics from Node Exporter
+  node-exporter:
+    # -- Scrape node metrics
+    enabled: true
+
+    # -- (string) How frequently to scrape metrics from Node Exporter.
+    # Overrides metrics.scrapeInterval
+    # @default -- 60s
+    scrapeInterval:
+
+    # -- Label matchers used by the Grafana Agent to select the Node exporter pods
+    labelMatchers:
+      app.kubernetes.io/name: prometheus-node-exporter.*
+
+    # -- (string) Rule blocks to be added to the discovery.relabel component for Node Exporter.
+    # See https://grafana.com/docs/agent/latest/flow/reference/components/discovery.relabel/#rule-block
+    extraRelabelingRules:
+
+    # -- (string) Rule blocks to be added to the prometheus.relabel component for Node Exporter.
+    # See https://grafana.com/docs/agent/latest/flow/reference/components/prometheus.relabel/#rule-block
+    extraMetricRelabelingRules:
+
+    # Node Exporter service settings
+    service:
+      # -- Does this port use TLS?
+      isTLS: false
+
+    # -- The list of Node Exporter metrics that will be scraped by the Agent
+    # @default -- See [Allow List for Node Exporter](#allow-list-for-node-exporter)
+    allowList:
+    - node_cpu.*
+    - node_exporter_build_info
+    - node_filesystem.*
+    - node_memory.*
+    - process_cpu_seconds_total
+    - process_resident_memory_bytes
+
+  # Windows Node metrics from Windows Exporter
+  windows-exporter:
+    # -- Scrape node metrics
+    enabled: false
+
+    # -- (string) How frequently to scrape metrics from Windows Exporter.
+    # Overrides metrics.scrapeInterval
+    # @default -- 60s
+    scrapeInterval:
+
+    # -- Label matchers used by the Grafana Agent to select the Windows Exporter pods
+    labelMatchers:
+      app.kubernetes.io/name: prometheus-windows-exporter.*
+
+    # -- (string) Rule blocks to be added to the discovery.relabel component for Windows Exporter.
+    # See https://grafana.com/docs/agent/latest/flow/reference/components/discovery.relabel/#rule-block
+    extraRelabelingRules:
+
+    # -- (string) Rule blocks to be added to the prometheus.relabel component for Windows Exporter.
+    # See https://grafana.com/docs/agent/latest/flow/reference/components/prometheus.relabel/#rule-block
+    extraMetricRelabelingRules:
+
+    # -- The list of Windows Exporter metrics that will be scraped by the Agent
+    # @default -- See [Allow List for Windows Exporter](#allow-list-for-windows-exporter)
+    allowList:
+      - windows_.*
+      - node_cpu_seconds_total
+      - node_filesystem_size_bytes
+      - node_filesystem_avail_bytes
+      - container_cpu_usage_seconds_total
+
+  # Cluster metrics from the Kubelet
+  kubelet:
+    # -- Scrape cluster metrics from the Kubelet
+    enabled: true
+
+    # -- (string) How frequently to scrape metrics from the Kubelet.
+    # Overrides metrics.scrapeInterval
+    # @default -- 60s
+    scrapeInterval:
+
+    # -- (string) Rule blocks to be added to the discovery.relabel component for Kubelet.
+    # See https://grafana.com/docs/agent/latest/flow/reference/components/discovery.relabel/#rule-block
+    extraRelabelingRules:
+
+    # -- (string) Rule blocks to be added to the prometheus.relabel component for Kubelet.
+    # See https://grafana.com/docs/agent/latest/flow/reference/components/prometheus.relabel/#rule-block
+    extraMetricRelabelingRules:
+
+    # -- The list of Kubelet metrics that will be scraped by the Agent
+    # @default -- See [Allow List for Kubelet](#allow-list-for-kubelet)
+    allowList:
+    - container_cpu_usage_seconds_total
+    - kubelet_certificate_manager_client_expiration_renew_errors
+    - kubelet_certificate_manager_client_ttl_seconds
+    - kubelet_certificate_manager_server_ttl_seconds
+    - kubelet_cgroup_manager_duration_seconds_bucket
+    - kubelet_cgroup_manager_duration_seconds_count
+    - kubelet_node_config_error
+    - kubelet_node_name
+    - kubelet_pleg_relist_duration_seconds_bucket
+    - kubelet_pleg_relist_duration_seconds_count
+    - kubelet_pleg_relist_interval_seconds_bucket
+    - kubelet_pod_start_duration_seconds_bucket
+    - kubelet_pod_start_duration_seconds_count
+    - kubelet_pod_worker_duration_seconds_bucket
+    - kubelet_pod_worker_duration_seconds_count
+    - kubelet_running_container_count
+    - kubelet_running_containers
+    - kubelet_running_pod_count
+    - kubelet_running_pods
+    - kubelet_runtime_operations_errors_total
+    - kubelet_runtime_operations_total
+    - kubelet_server_expiration_renew_errors
+    - kubelet_volume_stats_available_bytes
+    - kubelet_volume_stats_capacity_bytes
+    - kubelet_volume_stats_inodes
+    - kubelet_volume_stats_inodes_used
+    - kubernetes_build_info
+    - namespace_workload_pod
+    - rest_client_requests_total
+    - storage_operation_duration_seconds_count
+    - storage_operation_errors_total
+    - volume_manager_total_volumes
+
+  # Container metrics from cAdvisor
+  cadvisor:
+    # -- Scrape container metrics from cAdvisor
+    enabled: true
+
+    # -- (string) How frequently to scrape metrics from cAdvisor.
+    # Overrides metrics.scrapeInterval
+    # @default -- 60s
+    scrapeInterval:
+
+    # -- (string) Rule blocks to be added to the discovery.relabel component for cAdvisor.
+    # See https://grafana.com/docs/agent/latest/flow/reference/components/discovery.relabel/#rule-block
+    extraRelabelingRules:
+
+    # -- (string) Rule blocks to be added to the prometheus.relabel component for cAdvisor.
+    # See https://grafana.com/docs/agent/latest/flow/reference/components/prometheus.relabel/#rule-block
+    extraMetricRelabelingRules:
+
+    # -- The list of cAdvisor metrics that will be scraped by the Agent
+    # @default -- See [Allow List for cAdvisor](#allow-list-for-cadvisor)
+    allowList:
+    - container_cpu_cfs_periods_total
+    - container_cpu_cfs_throttled_periods_total
+    - container_cpu_usage_seconds_total
+    - container_fs_reads_bytes_total
+    - container_fs_reads_total
+    - container_fs_writes_bytes_total
+    - container_fs_writes_total
+    - container_memory_cache
+    - container_memory_rss
+    - container_memory_swap
+    - container_memory_working_set_bytes
+    - container_network_receive_bytes_total
+    - container_network_receive_packets_dropped_total
+    - container_network_receive_packets_total
+    - container_network_transmit_bytes_total
+    - container_network_transmit_packets_dropped_total
+    - container_network_transmit_packets_total
+    - machine_memory_bytes
+
+  # Metrics from the API Server
+  apiserver:
+    # -- Scrape metrics from the API Server
+    enabled: false
+
+    # -- (string) How frequently to scrape metrics from the API Server
+    # Overrides metrics.scrapeInterval
+    # @default -- 60s
+    scrapeInterval:
+
+    # -- (string) Rule blocks to be added to the discovery.relabel component for the API Server.
+    # See https://grafana.com/docs/agent/latest/flow/reference/components/discovery.relabel/#rule-block
+    extraRelabelingRules:
+
+    # -- (string) Rule blocks to be added to the prometheus.relabel component for the API Server.
+    # See https://grafana.com/docs/agent/latest/flow/reference/components/prometheus.relabel/#rule-block
+    extraMetricRelabelingRules:
+
+    # -- The list of API Server metrics that will be scraped by the Agent
+    allowList: []
+
+  # Cost related metrics from OpenCost
+  cost:
+    # -- Scrape cost metrics from OpenCost
+    enabled: true
+
+    # -- (string) How frequently to scrape metrics from OpenCost.
+    # Overrides metrics.scrapeInterval
+    # @default -- 60s
+    scrapeInterval:
+
+    # -- Label matchers used by the Grafana Agent to select the OpenCost service
+    labelMatchers:
+      app.kubernetes.io/name: opencost
+
+    # -- (string) Rule blocks to be added to the discovery.relabel component for OpenCost.
+    # See https://grafana.com/docs/agent/latest/flow/reference/components/discovery.relabel/#rule-block
+    extraRelabelingRules:
+
+    # -- (string) Rule blocks to be added to the prometheus.relabel component for OpenCost.
+    # See https://grafana.com/docs/agent/latest/flow/reference/components/prometheus.relabel/#rule-block
+    extraMetricRelabelingRules:
+
+    # -- The list of OpenCost metrics that will be scraped by the Agent
+    # @default -- See [Allow List for OpenCost](#allow-list-for-opencost)
+    allowList:
+    - container_cpu_allocation
+    - container_gpu_allocation
+    - container_memory_allocation_bytes
+    - deployment_match_labels
+    - kubecost_cluster_info
+    - kubecost_cluster_management_cost
+    - kubecost_cluster_memory_working_set_bytes
+    - kubecost_http_requests_total
+    - kubecost_http_response_size_bytes
+    - kubecost_http_response_time_seconds
+    - kubecost_load_balancer_cost
+    - kubecost_network_internet_egress_cost
+    - kubecost_network_region_egress_cost
+    - kubecost_network_zone_egress_cost
+    - kubecost_node_is_spot
+    - node_cpu_hourly_cost
+    - node_gpu_count
+    - node_gpu_hourly_cost
+    - node_ram_hourly_cost
+    - node_total_hourly_cost
+    - opencost_build_info
+    - pod_pvc_allocation
+    - pv_hourly_cost
+    - service_selector_labels
+    - statefulSet_match_labels
+
+  podMonitors:
+    # -- Include service discovery for PodMonitor objects
+    enabled: true
+
+    # -- Which namespaces to look for PodMonitor objects.
+    namespaces: []
+
+  probes:
+    # -- Include service discovery for Probe objects.
+    enabled: true
+
+    # -- Which namespaces to look for Probe objects.
+    namespaces: []
+
+  serviceMonitors:
+    # -- Include service discovery for ServiceMonitor objects
+    enabled: true
+
+    # -- Which namespaces to look for ServiceMonitor objects.
+    namespaces: []
+
+  kubernetesMonitoring:
+    # -- Report telemetry about this Kubernetes Monitoring chart as a metric.
+    enabled: true
+
+# Settings related to capturing and forwarding logs
+logs:
+  # -- Capture and forward logs
+  enabled: true
+
+  # Settings for Kubernetes pod logs
+  pod_logs:
+    # -- Capture and forward logs from Kubernetes pods
+    enabled: true
+
+    # -- Only capture logs from pods in these namespaces (`[]` means all namespaces)
+    namespaces: []
+
+    # -- (string) Rule blocks to be added to the discovery.relabel component for pod logs.
+    # See https://grafana.com/docs/agent/latest/flow/reference/components/discovery.relabel/#rule-block
+    extraRelabelingRules:
+
+    # -- (string) Stage blocks to be added to the prometheus.relabel component for pod logs.
+    # See https://grafana.com/docs/agent/latest/flow/reference/components/loki.process/#blocks
+    extraStageBlocks:
+
+  # Settings for scraping Kubernetes cluster events
+  cluster_events:
+    # -- Scrape Kubernetes cluster events
+    enabled: true
+
+    # -- List of namespaces to watch for events (`[]` means all namespaces)
+    namespaces: []
+
+  # -- (string) Extra configuration that will be added to Grafana Agent Logs. See [Adding custom Flow configuration](#adding-custom-flow-configuration) for an example.  
+  extraConfig:
+
+# Settings related to capturing and forwarding traces
+traces:
+  # -- Receive and forward traces.
+  enabled: false
+
+  # Trace receiver settings
+  receiver:
+    grpc:
+      # -- Should the Grafana Agent receive traces over gRPC?
+      enabled: true
+      # -- Which port to use for the gRPC receiver. This port needs to be opened in the grafana-agent section below.
+      port: 4317
+    http:
+      # -- Should the Grafana Agent receive traces over HTTP?
+      enabled: true
+      # -- Which port to use for the HTTP receiver. This port needs to be opened in the grafana-agent section below.
+      port: 4318
+    zipkin:
+      # -- Should the Grafana Agent receive Zipkin traces?
+      enabled: true
+      # -- Which port to use for the Zipkin receiver. This port needs to be opened in the grafana-agent section below.
+      port: 9411
+
+    # @ignore -- (number) kept for backwards compatibility. Please use grpc.port instead.
+    port:
+
+  # Trace processor settings
+  processors:
+    # Trace batch processor settings
+    batch:
+      # -- What batch size to use, in bytes
+      size: 16384
+      # -- The upper limit of the amount of data contained in a single batch, in bytes. When set to 0, batches can be any size.
+      maxSize: 0
+      # -- How long before sending
+      timeout: 2s
+
+# -- (string) Extra configuration that will be added to the Grafana Agent configuration file. See [Adding custom Flow configuration](#adding-custom-flow-configuration) for an example.
+extraConfig:
+
+# Settings for the test job, runnable by "helm test"
+test:
+  # -- Additional queries that will be run with `helm test`.
+  # Example:
+  # extraQueries:
+  #   - query: prometheus_metric{cluster="my-cluster-name"}
+  extraQueries: []
+
+  image:
+    # -- Test job image registry
+    registry: docker.io
+    # -- Test job image repository
+    image: ubuntu
+    # -- Test job image tag
+    tag: jammy
+
+# Settings for the Kube State Metrics deployment
+# You can use this sections to make modifications to the Kube State Metrics deployment.
+# See https://github.com/prometheus-community/helm-charts/tree/main/charts/kube-state-metrics for available values.
+kube-state-metrics:
+  # -- Should this helm chart deploy Kube State Metrics to the cluster.
+  # Set this to false if your cluster already has Kube State Metrics, or if you
+  # do not want to scrape metrics from Kube State Metrics.
+  enabled: true
+  # @ignored
+  nodeSelector:
+    kubernetes.io/os: linux
+
+# Settings for the Node Exporter deployment
+# You can use this sections to make modifications to the Node Exporter deployment.
+# See https://github.com/prometheus-community/helm-charts/tree/main/charts/prometheus-node-exporter for available values.
+prometheus-node-exporter:
+  # -- Should this helm chart deploy Node Exporter to the cluster.
+  # Set this to false if your cluster already has Node Exporter, or if you do
+  # not want to scrape metrics from Node Exporter.
+  enabled: true
+  # @ignored
+  nodeSelector:
+    kubernetes.io/os: linux
+
+# Settings for the Windows Exporter deployment
+# You can use this sections to make modifications to the Windows Exporter deployment.
+# See https://github.com/prometheus-community/helm-charts/tree/main/charts/prometheus-windows-exporter for available values.
+prometheus-windows-exporter:
+  # -- Should this helm chart deploy Windows Exporter to the cluster.
+  # Set this to false if your cluster already has Windows Exporter, or if you do
+  # not want to scrape metrics from Windows Exporter.
+  enabled: false
+
+  config: |-
+    collectors:
+      enabled: cpu,cs,container,logical_disk,memory,net,os
+    collector:
+      service:
+        services-where: "Name='containerd' or Name='kubelet'"
+
+# Settings for the Prometheus Operator CRD deployment
+# You can use this sections to make modifications to the Prometheus Operator CRD deployment.
+# See https://github.com/prometheus-community/helm-charts/tree/main/charts/prometheus-operator-crds for available values.
+prometheus-operator-crds:
+  # -- Should this helm chart deploy the Prometheus Operator CRDs to the cluster.
+  # Set this to false if your cluster already has the CRDs, or if you do not
+  # to have the Grafana Agent scrape metrics from PodMonitors, Probes, or ServiceMonitors.
+  enabled: true
+
+# Settings for the OpenCost deployment
+# You can use this sections to make modifications to the OpenCost deployment.
+# See https://github.com/opencost/opencost-helm-chart for available values.
+opencost:
+  # -- Should this Helm chart deploy OpenCost to the cluster.
+  # Set this to false if your cluster already has OpenCost, or if you do
+  # not want to scrape metrics from OpenCost.
+  enabled: true
+
+  opencost:
+    # @ignored -- This skips including these values in README.md
+    exporter:
+      # -- Default cluster ID to use if cluster is not set in Prometheus metrics. It should match cluster.name.
+      defaultClusterId: "default-cluster"
+      extraEnv:
+        # -- Trial API Key used only with GCP.
+        # See https://www.opencost.io/docs/configuration/gcp-opencost for how to set for your environment
+        CLOUD_PROVIDER_API_KEY: AIzaSyD29bGxmHAVEOBYtgd8sYM2gM2ekfxQX4U
+        EMIT_KSM_V1_METRICS: "false"
+        EMIT_KSM_V1_METRICS_ONLY: "true"
+        PROM_CLUSTER_ID_LABEL: cluster
+
+    prometheus:
+      # @ignored -- This skips including these values in README.md
+      secret_name: grafana-agent-credentials
+      # @ignored -- This skips including these values in README.md
+      username_key: prometheus_username
+      # @ignored -- This skips including these values in README.md
+      password_key: prometheus_password
+      external:
+        # @ignored -- This skips including these values in README.md
+        enabled: true
+        # -- The URL for Prometheus queries. It should match externalService.prometheus.host + "/api/prom"
+        url: "https://prom.example.com/api/prom"
+      # @ignored -- This skips including these values in README.md
+      internal:
+        enabled: false
+    # @ignored -- This skips including these values in README.md
+    ui:
+      enabled: false
+    # @ignored -- This skips including these values in README.md
+    nodeSelector:
+      kubernetes.io/os: linux
+
+
+# Settings for the Grafana Agent deployment
+# You can use this sections to make modifications to the Grafana Agent deployment.
+# See https://github.com/grafana/agent/tree/main/operations/helm/charts/grafana-agent for available values.
+# @ignored -- This skips including these values in README.md
+grafana-agent:
+  agent:
+    # This chart is creating the configuration, so the grafana-agent chart does
+    # not need to.
+    configMap: {create: false}
+
+    clustering:
+      enabled: true
+
+    # This chart creates the credentials for Prometheus and Loki. This section
+    # mounts those credentials into the Grafana Agent container.
+    mounts:
+      extra:
+      - name: grafana-agent-credentials
+        mountPath: /etc/grafana-agent-credentials
+      - name: kubernetes-monitoring-telemetry
+        mountPath: /etc/kubernetes-monitoring-telemetry
+
+  controller:
+    type: statefulset
+    nodeSelector:
+      kubernetes.io/os: linux
+
+    # This chart creates the credentials for Prometheus and Loki. This section
+    # connects those credentials into the Grafana Agent pod.
+    volumes:
+      extra:
+      - name: grafana-agent-credentials
+        secret:
+          secretName: grafana-agent-credentials
+      - name: kubernetes-monitoring-telemetry
+        configMap:
+          name: kubernetes-monitoring-telemetry
+
+  # Skip installation of the Grafana Agent CRDs, since we don't use them in this chart
+  crds:
+    create: false
+
+# Settings for the Grafana Agent deployment
+# You can use this sections to make modifications to the Grafana Agent deployment.
+# See https://github.com/grafana/agent/tree/main/operations/helm/charts/grafana-agent for available values.
+# @ignored -- This skips including these values in README.md
+grafana-agent-logs:
+  agent:
+    # This chart is creating the configuration, so the grafana-agent chart does
+    # not need to.
+    configMap:
+      create: false
+
+    mounts:
+      # Loads /var/log as a hostPath volume to find and scrape pod logs
+      varlog: true
+
+      # The k8s-monitoring chart creates the credentials for Prometheus and Loki. This section
+      # mounts those credentials into the Grafana Agent container.
+      extra:
+        - name: grafana-agent-credentials
+          mountPath: /etc/grafana-agent-credentials
+
+  controller:
+    type: daemonset
+    nodeSelector:
+      kubernetes.io/os: linux
+
+    tolerations:
+      - effect: NoSchedule
+        operator: Exists
+
+    # This chart creates the credentials for Prometheus and Loki. This section
+    # connects those credentials into the Grafana Agent pod.
+    volumes:
+      extra:
+      - name: grafana-agent-credentials
+        secret:
+          secretName: grafana-agent-credentials
+
+  # Skip installation of the Grafana Agent CRDs, since we don't use them in this chart
+  crds:
+    create: false

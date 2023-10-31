@@ -1,0 +1,47 @@
+
+---
+cluster:
+  name: zoo
+externalServices:
+  prometheus:
+    host: https://prometheus-prod-24-prod-eu-west-2.grafana.net
+    basicAuth:
+      username: "1261057"
+      password: #@ "<path:secrets/zoo.grafana-agent.yaml#token>"
+      #! password: #@ "<path:secrets/{id}.grafana-agent.yaml#storage-uuid>".format(id=environment.id)
+      #! TODO: findout how to do this directly inside helm values
+  loki:
+    host: https://logs-prod-012.grafana.net
+    basicAuth:
+      username: "729574"
+      password: #@ "<path:secrets/zoo.grafana-agent.yaml#token>"
+  tempo:
+    host: https://tempo-prod-10-prod-eu-west-2.grafana.net:443
+    basicAuth:
+      username: "728678"
+      password: #@ "<path:secrets/zoo.grafana-agent.yaml#token>"
+metrics:
+  cost:
+    enabled: false
+opencost:
+  enabled: false
+traces:
+  enabled: true
+grafana-agent:
+  agent:
+    extraPorts:
+      - name: otlp-grpc
+        port: 4317
+        targetPort: 4317
+        protocol: TCP
+      - name: otlp-http
+        port: 4318
+        targetPort: 4318
+        protocol: TCP
+      - name: "zipkin"
+        port: 9411
+        targetPort: 9411
+        protocol: "TCP"
+
+#! OTLP/gRPC endpoint: grafana-k8s-monitoring-grafana-agent.grafana-agent.svc.cluster.local:4317
+#! OTLP/HTTP endpoint: grafana-k8s-monitoring-grafana-agent.grafana-agent.svc.cluster.local:4318

@@ -1,0 +1,12 @@
+apiVersion: v1
+data:
+  metrics.prom: |
+    # HELP grafana_kubernetes_monitoring_build_info A metric to report the version of the Kubernetes Monitoring Helm chart as well as a summary of enabled features
+    # TYPE grafana_kubernetes_monitoring_build_info gauge
+    grafana_kubernetes_monitoring_build_info{version="0.3.0", namespace="grafana-agent", metrics="enabled,agent,kube-state-metrics,node-exporter,kubelet,cadvisor", logs="enabled,events,pod_logs", traces="enabled", deployments="kube-state-metrics,prometheus-node-exporter,prometheus-operator-crds"} 1
+kind: ConfigMap
+metadata:
+  annotations:
+    a8r.io/repository: git@github.com:kbudde/lab.git
+  name: kubernetes-monitoring-telemetry
+  namespace: grafana-agent

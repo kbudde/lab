@@ -1,0 +1,68 @@
+{{ define "agent.config.node_exporter" }}
+// Node Exporter
+discovery.relabel "node_exporter" {
+  targets = discovery.kubernetes.pods.targets
+{{- if (index .Values "prometheus-node-exporter").enabled }}
+  rule {
+    source_labels = ["__meta_kubernetes_pod_label_app_kubernetes_io_instance"]
+    regex = "{{ .Release.Name }}"
+    action = "keep"
+  }
+{{- end }}
+  {{- range $k, $v := (index .Values.metrics "node-exporter").labelMatchers }}
+  rule {
+    source_labels = ["__meta_kubernetes_pod_label_{{ $k | replace "." "_" | replace "/" "_" }}"]
+    regex = "{{ $v }}"
+    action = "keep"
+  }
+  {{- end }}
+  rule {
+    source_labels = ["__meta_kubernetes_pod_node_name"]
+    action = "replace"
+    target_label = "instance"
+  }
+{{- if .Values.metrics.extraRelabelingRules }}
+{{ .Values.metrics.extraRelabelingRules | indent 2 }}
+{{- end }}
+{{- if (index .Values.metrics "node-exporter").extraRelabelingRules }}
+{{ (index .Values.metrics "node-exporter").extraRelabelingRules | indent 2 }}
+{{- end }}
+}
+
+prometheus.scrape "node_exporter" {
+  job_name   = "integrations/node_exporter"
+  targets  = discovery.relabel.node_exporter.output
+  scrape_interval = {{ (index .Values.metrics "node-exporter").scrapeInterval | default .Values.metrics.scrapeInterval | quote }}
+{{- if (index .Values "grafana-agent").agent.clustering.enabled }}
+  clustering {
+    enabled = true
+  }
+{{- end }}
+  forward_to = [prometheus.relabel.node_exporter.receiver]
+{{- if (index .Values.metrics "node-exporter").service.isTLS }}
+  scheme     = "https"
+  bearer_token_file = "/var/run/secrets/kubernetes.io/serviceaccount/token"
+  tls_config {
+    ca_file = "/var/run/secrets/kubernetes.io/serviceaccount/ca.crt"
+    insecure_skip_verify = true
+  }
+{{- end }}
+}
+
+prometheus.relabel "node_exporter" {
+{{- if (index .Values.metrics "node-exporter").allowList }}
+  rule {
+    source_labels = ["__name__"]
+    regex = "up|{{ join "|" (index .Values.metrics "node-exporter").allowList }}"
+    action = "keep"
+  }
+{{- end }}
+{{- if .Values.metrics.extraMetricRelabelingRules }}
+{{ .Values.metrics.extraMetricRelabelingRules | indent 2 }}
+{{- end }}
+{{- if (index .Values.metrics "node-exporter").extraMetricRelabelingRules }}
+{{ (index .Values.metrics "node-exporter").extraMetricRelabelingRules | indent 2 }}
+{{- end }}
+  forward_to = [prometheus.relabel.metrics_service.receiver]
+}
+{{ end }}

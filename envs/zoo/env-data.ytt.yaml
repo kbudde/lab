@@ -14,6 +14,7 @@ environment:
     name: longhorn-system
   - proto: traefik
   - proto: calico
+  - proto: grafana-agent
 shared:
   domain: "zoo.budd.ee"
 

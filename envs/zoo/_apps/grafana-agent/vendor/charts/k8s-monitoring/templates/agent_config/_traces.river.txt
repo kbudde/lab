@@ -1,0 +1,66 @@
+{{ define "agent.config.traces" }}
+{{- if not (or .Values.traces.receiver.grpc.enabled .Values.traces.receiver.http.enabled .Values.traces.receiver.zipkin.enabled) }}
+  {{- fail "You must enable either gRPC, HTTP, or Zipkin receivers" -}}
+{{- end }}
+// Traces
+{{- if (or .Values.traces.receiver.grpc.enabled .Values.traces.receiver.http.enabled) }}
+otelcol.receiver.otlp "trace_receiver" {
+
+{{- if or .Values.traces.receiver.port .Values.traces.receiver.grpc.enabled }}
+{{$data := dict "port" (.Values.traces.receiver.port | default .Values.traces.receiver.grpc.port) "type" "OTLP gRPC" "agent" (index .Values "grafana-agent").agent }}
+{{- include "checkforTracePort" $data -}}
+  grpc {
+    endpoint = "0.0.0.0:{{ $data.port | int }}"
+  }
+{{- end }}
+{{- if .Values.traces.receiver.http.enabled }}
+{{$data := dict "port" .Values.traces.receiver.http.port "type" "OTLP HTTP" "agent" (index .Values "grafana-agent").agent }}
+{{- include "checkforTracePort" $data -}}
+  http {
+    endpoint = "0.0.0.0:{{ $data.port | int }}"
+  }
+{{- end }}
+  output {
+    traces = [otelcol.processor.batch.trace_batch_processor.input]
+  }
+}
+{{- end }}
+
+{{- if .Values.traces.receiver.zipkin.enabled }}
+otelcol.receiver.zipkin "trace_receiver" {
+{{$data := dict "port" .Values.traces.receiver.zipkin.port "type" "Zipkin" "agent" (index .Values "grafana-agent").agent }}
+{{- include "checkforTracePort" $data -}}
+  endpoint = "0.0.0.0:{{ $data.port | int }}"
+  output {
+    traces = [otelcol.processor.batch.trace_batch_processor.input]
+  }
+}
+{{- end }}
+
+{{- with .Values.traces }}
+otelcol.processor.batch "trace_batch_processor" {
+  send_batch_size = {{ .processors.batch.size | int }}
+  send_batch_max_size = {{ .processors.batch.maxSize | int }}
+  timeout = {{ .processors.batch.timeout | quote}}
+  output {
+    traces = [otelcol.processor.attributes.trace_attributes_processor.input]
+  }
+}
+{{- end }}
+
+otelcol.processor.attributes "trace_attributes_processor" {
+  action {
+    key = "cluster"
+    value = {{ required ".Values.cluster.name is a required value. Please set it and try again." .Values.cluster.name | quote }}
+    action = "insert"
+  }
+  action {
+    key = "k8s.cluster.name"
+    value = {{ required ".Values.cluster.name is a required value. Please set it and try again." .Values.cluster.name | quote }}
+    action = "upsert"
+  }
+  output {
+    traces = [otelcol.exporter.otlp.tempo.input]
+  }
+}
+{{- end }}
