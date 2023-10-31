@@ -15,6 +15,7 @@ environment:
   - proto: traefik
   - proto: calico
   - proto: grafana-agent
+  - proto: goldpinger
 shared:
   domain: "zoo.budd.ee"
 
