@@ -1,0 +1,41 @@
+#@ load("@ytt:data", "data")
+#@ shared = data.values.shared
+#@ application = data.values.application
+---
+image:
+  tag: 1.29.2-alpine
+
+ingress:
+  enabled: true
+  hostname: #@ "vault." + shared.domain
+  class: ""
+  nginxIngressAnnotations: false
+
+domain: #@ "https://vault." + shared.domain
+
+storage:
+  enabled: true
+  size: "2Gi"
+  class: "default"
+  dataDir: "/data"
+
+signupDomains: "budd.ee"
+
+smtp:
+  host: #@ application.smtp.hostname
+  port: #@ application.smtp.port
+  from: #@ application.smtp.fromMail
+  fromName: #@ application.smtp.sender
+  authMechanism: #@ application.smtp.authentication
+  security: #@ application.smtp.encryption
+  #! @param smtp.existingSecret Name of an existing secret containing the SMTP username and password. Also set smtp.username.existingSecretKey and smtp.password.existingSecretKey.
+  existingSecret: "vaultwarden"
+  username:
+    existingSecretKey: "SMTP_USERNAME"
+  password:
+    existingSecretKey: "SMTP_PASSWORD"
+
+
+adminToken:
+  existingSecret: "vaultwarden"
+  existingSecretKey: "ADMIN_TOKEN"

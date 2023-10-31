@@ -1,0 +1,39 @@
+apiVersion: v1
+data:
+  DATA_FOLDER: /data
+  DATABASE_MAX_CONNS: "10"
+  DB_CONNECTION_RETRIES: "15"
+  DOMAIN: https://vault.budd.ee
+  INVITATIONS_ALLOWED: "true"
+  ROCKET_PORT: "8080"
+  ROCKET_WORKERS: "10"
+  SHOW_PASSWORD_HINT: "false"
+  SIGNUPS_ALLOWED: "true"
+  SIGNUPS_DOMAINS_WHITELIST: budd.ee
+  SIGNUPS_VERIFY: "true"
+  SMTP_ACCEPT_INVALID_CERTS: "false"
+  SMTP_ACCEPT_INVALID_HOSTNAMES: "false"
+  SMTP_AUTH_MECHANISM: Login
+  SMTP_DEBUG: "false"
+  SMTP_FROM: vault@budd.ee
+  SMTP_FROM_NAME: vaultwarden
+  SMTP_HOST: box.budd.ee
+  SMTP_PORT: "465"
+  SMTP_SECURITY: force_tls
+  WEB_VAULT_ENABLED: "true"
+  WEBSOCKET_ADDRESS: 0.0.0.0
+  WEBSOCKET_ENABLED: "true"
+  WEBSOCKET_PORT: "3012"
+kind: ConfigMap
+metadata:
+  annotations:
+    a8r.io/repository: git@github.com:kbudde/lab.git
+  labels:
+    app.kubernetes.io/component: vaultwarden
+    app.kubernetes.io/instance: vaultwarden
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: vaultwarden
+    app.kubernetes.io/version: 1.29.2-alpine
+    helm.sh/chart: vaultwarden-0.14.0
+  name: vaultwarden
+  namespace: vaultwarden

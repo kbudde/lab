@@ -1,0 +1,11 @@
+apiVersion: vendir.k14s.io/v1alpha1
+directories:
+- contents:
+  - git:
+      commitTitle: Add release workflow
+      sha: fab2efdaf1ab9ce6795578e331561f8695d25581
+      tags:
+      - v0.14.0
+    path: .
+  path: charts/vaultwarden
+kind: LockConfig

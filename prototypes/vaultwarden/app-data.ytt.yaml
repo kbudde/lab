@@ -1,0 +1,14 @@
+#@data/values-schema
+---
+application:
+  #@overlay/match missing_ok=True
+  smtp:
+    #@schema/validation min_len=1
+    hostname: "box.budd.ee"
+    port: 465
+    fromMail: "vault@budd.ee"
+    sender: "vaultwarden"
+    #@schema/validation one_of=["Login", "Plain","Xoauth2"]
+    authentication: "Login"
+    #@schema/validation one_of=["off", "force_tls", "starttls"]
+    encryption: "force_tls"

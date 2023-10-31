@@ -1,0 +1,27 @@
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    a8r.io/repository: git@github.com:kbudde/lab.git
+  labels:
+    app.kubernetes.io/component: vaultwarden
+    app.kubernetes.io/instance: vaultwarden
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: vaultwarden
+    app.kubernetes.io/version: 1.29.2-alpine
+    helm.sh/chart: vaultwarden-0.14.0
+  name: vaultwarden
+  namespace: vaultwarden
+spec:
+  ports:
+    - name: http
+      port: 80
+      protocol: TCP
+      targetPort: 8080
+    - name: websocket
+      port: 3012
+      protocol: TCP
+      targetPort: 3012
+  selector:
+    app.kubernetes.io/component: vaultwarden
+  type: ClusterIP

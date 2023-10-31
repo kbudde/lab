@@ -1,0 +1,93 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  annotations:
+    a8r.io/repository: git@github.com:kbudde/lab.git
+  labels:
+    app.kubernetes.io/component: vaultwarden
+    app.kubernetes.io/instance: vaultwarden
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: vaultwarden
+    app.kubernetes.io/version: 1.29.2-alpine
+    helm.sh/chart: vaultwarden-0.14.0
+  name: vaultwarden
+  namespace: vaultwarden
+spec:
+  persistentVolumeClaimRetentionPolicy:
+    whenDeleted: Retain
+    whenScaled: Retain
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: vaultwarden
+      app.kubernetes.io/instance: vaultwarden
+      app.kubernetes.io/name: vaultwarden
+  serviceName: vaultwarden
+  template:
+    metadata:
+      annotations:
+        checksum/config: 24653c70597147841484d249d3bc3135dcd48619
+        checksum/secret: adc83b19e793491b1c6ea0fd8b46cd9f32e592fc
+      labels:
+        app.kubernetes.io/component: vaultwarden
+        app.kubernetes.io/instance: vaultwarden
+        app.kubernetes.io/name: vaultwarden
+    spec:
+      containers:
+        - env:
+            - name: SMTP_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  key: SMTP_USERNAME
+                  name: vaultwarden
+            - name: SMTP_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  key: SMTP_PASSWORD
+                  name: vaultwarden
+            - name: ADMIN_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  key: ADMIN_TOKEN
+                  name: vaultwarden
+          envFrom:
+            - configMapRef:
+                name: vaultwarden
+          image: docker.io/vaultwarden/server:1.29.2-alpine
+          imagePullPolicy: IfNotPresent
+          name: vaultwarden
+          ports:
+            - containerPort: 8080
+              name: http
+              protocol: TCP
+            - containerPort: 3012
+              name: websocket
+              protocol: TCP
+          resources:
+            limits:
+              cpu: 300m
+              memory: 1Gi
+            requests:
+              cpu: 50m
+              memory: 256Mi
+          volumeMounts:
+            - mountPath: /data
+              name: vaultwarden-data
+      initContainers: null
+      serviceAccountName: vaultwarden-svc
+  volumeClaimTemplates:
+    - metadata:
+        labels:
+          app.kubernetes.io/instance: vaultwarden
+          app.kubernetes.io/managed-by: Helm
+          app.kubernetes.io/name: vaultwarden
+          app.kubernetes.io/version: 1.29.2-alpine
+          helm.sh/chart: vaultwarden-0.14.0
+        name: vaultwarden-data
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: 2Gi
+        storageClassName: default

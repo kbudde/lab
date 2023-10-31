@@ -9,6 +9,7 @@ environment:
   - proto: metallb
     name: metallb-system
   - proto: mailinabox
+  - proto: vaultwarden
 shared:
   domain: "zoo.budd.ee"
 
