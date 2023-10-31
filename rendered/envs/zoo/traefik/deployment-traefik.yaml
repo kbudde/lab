@@ -1,0 +1,143 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    a8r.io/repository: git@github.com:kbudde/lab.git
+  labels:
+    app.kubernetes.io/instance: traefik
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: traefik
+    helm.sh/chart: traefik-10.14.1
+  name: traefik
+  namespace: traefik
+spec:
+  minReadySeconds: 0
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: traefik
+      app.kubernetes.io/name: traefik
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+    type: RollingUpdate
+  template:
+    metadata:
+      annotations:
+        prometheus.io/path: /metrics
+        prometheus.io/port: "9100"
+        prometheus.io/scrape: "true"
+      labels:
+        app.kubernetes.io/instance: traefik
+        app.kubernetes.io/managed-by: Helm
+        app.kubernetes.io/name: traefik
+        helm.sh/chart: traefik-10.14.1
+    spec:
+      containers:
+        - args:
+            - --global.checknewversion
+            - --entrypoints.metrics.address=:9100/tcp
+            - --entrypoints.traefik.address=:9000/tcp
+            - --entrypoints.web.address=:8000/tcp
+            - --entrypoints.websecure.address=:8443/tcp
+            - --api.dashboard=true
+            - --ping=true
+            - --metrics.prometheus=true
+            - --metrics.prometheus.entrypoint=metrics
+            - --providers.kubernetescrd
+            - --providers.kubernetesingress
+            - --providers.kubernetesingress.ingressendpoint.publishedservice=traefik/traefik
+            - --entrypoints.websecure.http.tls=true
+            - --entrypoints.websecure.http.tls.certResolver=default
+            - --pilot.dashboard=false
+            - --certificatesresolvers.default.acme.storage=/data/acme-budd.ee.json
+            - --certificatesresolvers.default.acme.dnschallenge=true
+            - --certificatesresolvers.default.acme.dnschallenge.provider=httpreq
+            - --certificatesresolvers.default.acme.email=kris@budd.ee
+            - --entrypoints.web.http.redirections.entryPoint.scheme=https
+            - --entrypoints.web.http.redirections.entrypoint.permanent=true
+            - --entrypoints.web.http.redirections.entryPoint.to=:443
+          env:
+            - name: HTTPREQ_ENDPOINT
+              value: http://mailinabox:8080
+          image: traefik:2.6.0
+          imagePullPolicy: IfNotPresent
+          livenessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /ping
+              port: 9000
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 2
+          name: traefik
+          ports:
+            - containerPort: 9100
+              name: metrics
+              protocol: TCP
+            - containerPort: 9000
+              name: traefik
+              protocol: TCP
+            - containerPort: 8000
+              name: web
+              protocol: TCP
+            - containerPort: 8443
+              name: websecure
+              protocol: TCP
+          readinessProbe:
+            failureThreshold: 1
+            httpGet:
+              path: /ping
+              port: 9000
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 2
+          resources:
+            limits:
+              memory: 150Mi
+            requests:
+              cpu: 100m
+              memory: 50Mi
+          securityContext:
+            capabilities:
+              drop:
+                - ALL
+            readOnlyRootFilesystem: true
+            runAsGroup: 65532
+            runAsNonRoot: true
+            runAsUser: 65532
+          volumeMounts:
+            - mountPath: /data
+              name: data
+            - mountPath: /tmp
+              name: tmp
+      hostNetwork: false
+      initContainers:
+        - command:
+            - sh
+            - -c
+            - chmod -Rv 600 /data/*
+          image: busybox:1.31.1
+          name: volume-permissions
+          volumeMounts:
+            - mountPath: /data
+              name: data
+        - command:
+            - sh
+            - -c
+            - sleep 5s
+          image: busybox:1.31.1
+          name: delay
+      securityContext:
+        fsGroup: 65532
+      serviceAccountName: traefik
+      terminationGracePeriodSeconds: 60
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: traefik
+        - emptyDir: {}
+          name: tmp

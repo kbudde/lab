@@ -12,6 +12,7 @@ environment:
   - proto: vaultwarden
   - proto: longhorn
     name: longhorn-system
+  - proto: traefik
 shared:
   domain: "zoo.budd.ee"
 

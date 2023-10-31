@@ -23,3 +23,15 @@ metadata:
 metadata:
   #@overlay/match missing_ok=True
   namespace: #@ set_ns
+
+
+#! set namespace on all lists to match the app name
+#! most helm charts are not setting the namespace for each document
+#! warn: sometimes apps require multiple namespaces. This is currently not supported.
+#@overlay/match by=overlay.subset({"kind":"List"}),expects="0+"
+---
+items:
+  #@overlay/match by=overlay.all,expects="1+"
+  #@overlay/match-child-defaults missing_ok=True
+  - metadata:
+      namespace: #@ set_ns

@@ -1,0 +1,199 @@
+
+
+#
+# Configure the deployment
+#
+deployment:
+  # Additional initContainers (e.g. for setting file permission as shown below)
+  initContainers:
+    # The "volume-permissions" init container is required if you run into permission issues.
+    # Related issue: https://github.com/traefik/traefik/issues/6972
+    - name: volume-permissions
+      image: busybox:1.31.1
+      command: ["sh", "-c", "chmod -Rv 600 /data/*"]
+      volumeMounts:
+        - name: data
+          mountPath: /data
+    - name: delay
+      image: busybox:1.31.1
+      command: ["sh", "-c", "sleep 5s"]
+
+
+# Activate Pilot integration
+pilot:
+  enabled: false
+  token: ""
+  # Toggle Pilot Dashboard
+  dashboard: false
+
+# Create an IngressRoute for the dashboard
+ingressRoute:
+  dashboard:
+    enabled: true
+    # Additional ingressRoute annotations (e.g. for kubernetes.io/ingress.class)
+    annotations: {}
+    # Additional ingressRoute labels (e.g. for filtering IngressRoute by custom labels)
+    labels: {}
+
+#
+# Configure providers
+#
+providers:
+  kubernetesCRD:
+    enabled: true
+  kubernetesIngress:
+    enabled: true
+    publishedService:
+      enabled: true
+
+
+
+metrics:
+  # datadog:
+  #   address: 127.0.0.1:8125
+  # influxdb:
+  #   address: localhost:8089
+  #   protocol: udp
+  prometheus:
+    entryPoint: metrics
+  # statsd:
+  #   address: localhost:8125
+
+globalArguments:
+  - "--global.checknewversion"
+  # - "--global.sendanonymoususage"
+
+#
+# Configure Traefik static configuration
+# Additional arguments to be passed at Traefik's binary
+# All available options available on https://docs.traefik.io/reference/static-configuration/cli/
+## Use curly braces to pass values: `helm install --set="additionalArguments={--providers.kubernetesingress.ingressclass=traefik-internal,--log.level=DEBUG}"`
+additionalArguments:
+- "--certificatesresolvers.default.acme.storage=/data/acme-budd.ee.json"
+- "--certificatesresolvers.default.acme.dnschallenge=true"
+- "--certificatesresolvers.default.acme.dnschallenge.provider=httpreq"
+- "--certificatesresolvers.default.acme.email=kris@budd.ee"
+# - "--certificatesresolvers.default.acme.caserver=https://acme-staging-v02.api.letsencrypt.org/directory"
+- "--entrypoints.web.http.redirections.entryPoint.scheme=https"
+- "--entrypoints.web.http.redirections.entrypoint.permanent=true"
+- "--entrypoints.web.http.redirections.entryPoint.to=:443"
+#  - "--providers.kubernetesingress.ingressclass=traefik-internal"
+#- "--providers.kubernetesingress.ingressendpoint.ip=127.0.0.1"
+#  - "--log.level=DEBUG"
+
+# Environment variables to be passed to Traefik's binary
+env:
+- name: HTTPREQ_ENDPOINT
+  value: http://mailinabox:8080
+
+
+# Configure ports
+ports:
+  # The name of this one can't be changed as it is used for the readiness and
+  # liveness probes, but you can adjust its config to your liking
+  traefik:
+    port: 9000
+    # Use hostPort if set.
+    # hostPort: 9000
+    #
+    # Use hostIP if set. If not set, Kubernetes will default to 0.0.0.0, which
+    # means it's listening on all your interfaces and all your IPs. You may want
+    # to set this value if you need traefik to listen on specific interface
+    # only.
+    # hostIP: 192.168.100.10
+
+    # Override the liveness/readiness port. This is useful to integrate traefik
+    # with an external Load Balancer that performs healthchecks.
+    # healthchecksPort: 9000
+
+    # Defines whether the port is exposed if service.type is LoadBalancer or
+    # NodePort.
+    #
+    # You SHOULD NOT expose the traefik port on production deployments.
+    # If you want to access it from outside of your cluster,
+    # use `kubectl port-forward` or create a secure ingress
+    expose: true
+    # The exposed port for this service
+    exposedPort: 9000
+    # The port protocol (TCP/UDP)
+    protocol: TCP
+  web:
+    port: 8000
+    # hostPort: 8000
+    expose: true
+    exposedPort: 80
+    # The port protocol (TCP/UDP)
+    protocol: TCP
+    # Use nodeport if set. This is useful if you have configured Traefik in a
+    # LoadBalancer
+    # nodePort: 32080
+    # Port Redirections
+    # Added in 2.2, you can make permanent redirects via entrypoints.
+    # https://docs.traefik.io/routing/entrypoints/#redirection
+    # redirectTo: websecure
+  websecure:
+    port: 8443
+    # hostPort: 8443
+    expose: true
+    exposedPort: 443
+    # The port protocol (TCP/UDP)
+    protocol: TCP
+    # nodePort: 32443
+    # Set TLS at the entrypoint
+    # https://doc.traefik.io/traefik/routing/entrypoints/#tls
+    tls:
+      enabled: true
+      # this is the name of a TLSOption definition
+      options: ""
+      certResolver: "default"
+      domains: []
+      # - main: example.com
+      #   sans:
+      #     - foo.example.com
+      #     - bar.example.com
+
+
+# Options for the main traefik service, where the entrypoints traffic comes
+# from.
+service:
+  enabled: true
+  type: LoadBalancer
+  # Additional entries here will be added to the service spec. Cannot contains
+  # type, selector or ports entries.
+  spec:
+    loadBalancerIP: 192.168.178.220
+    externalTrafficPolicy: Local
+    # externalTrafficPolicy: Cluster
+    # loadBalancerIP: "1.2.3.4"
+    # clusterIP: "2.3.4.5"
+  loadBalancerSourceRanges: []
+    # - 192.168.0.1/32
+    # - 172.16.0.0/16
+  externalIPs: []
+    # - 1.2.3.4
+
+
+
+# Enable persistence using Persistent Volume Claims
+# ref: http://kubernetes.io/docs/user-guide/persistent-volumes/
+# After the pvc has been mounted, add the configs into traefik by using the `additionalArguments` list below, eg:
+# additionalArguments:
+# - "--certificatesresolvers.le.acme.storage=/data/acme.json"
+# It will persist TLS certificates.
+persistence:
+  enabled: true
+  name: data
+#  existingClaim: ""
+  accessMode: ReadWriteOnce
+  size: 128Mi
+  storageClass: "longhorn"
+  path: /data
+  annotations: {}
+  # subPath: "" # only mount a subpath of the Volume into the pod
+
+resources:
+  requests:
+    cpu: "100m"
+    memory: "50Mi"
+  limits:
+    memory: "150Mi"
