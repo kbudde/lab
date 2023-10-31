@@ -2,8 +2,8 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - helmChart:
-      appVersion: 2.6.0
-      version: 10.14.1
+      appVersion: v2.10.5
+      version: 25.0.0
     path: .
   path: charts/traefik
 kind: LockConfig

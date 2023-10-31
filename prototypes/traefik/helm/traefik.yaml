@@ -10,7 +10,7 @@ deployment:
     # Related issue: https://github.com/traefik/traefik/issues/6972
     - name: volume-permissions
       image: busybox:1.31.1
-      command: ["sh", "-c", "chmod -Rv 600 /data/*"]
+      command: ["sh", "-c", "chmod -Rv 600 /data/*.json"]
       volumeMounts:
         - name: data
           mountPath: /data

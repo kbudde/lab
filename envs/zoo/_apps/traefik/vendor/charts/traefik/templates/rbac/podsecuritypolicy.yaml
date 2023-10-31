@@ -1,4 +1,7 @@
 {{- if .Values.podSecurityPolicy.enabled }}
+{{- if semverCompare ">=1.25.0-0" .Capabilities.KubeVersion.Version }}
+  {{- fail "ERROR: PodSecurityPolicy has been removed in Kubernetes v1.25+" }}
+{{- end }}
 ---
 apiVersion: policy/v1beta1
 kind: PodSecurityPolicy
@@ -8,10 +11,7 @@ metadata:
     seccomp.security.alpha.kubernetes.io/defaultProfileName: runtime/default
   name: {{ template "traefik.fullname" . }}
   labels:
-    app.kubernetes.io/name: {{ template "traefik.name" . }}
-    helm.sh/chart: {{ template "traefik.chart" . }}
-    app.kubernetes.io/managed-by: {{ .Release.Service }}
-    app.kubernetes.io/instance: {{ .Release.Name }}
+    {{- include "traefik.labels" . | nindent 4 }}
 spec:
   privileged: false
   allowPrivilegeEscalation: false

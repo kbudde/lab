@@ -5,7 +5,7 @@ deployment:
     command:
     - sh
     - -c
-    - chmod -Rv 600 /data/*
+    - chmod -Rv 600 /data/*.json
     volumeMounts:
     - name: data
       mountPath: /data

@@ -1,13 +1,17 @@
-{{- if and .Values.rbac.enabled .Values.rbac.namespaced }}
+{{- $ingressNamespaces := default (include "traefik.namespace" . | list) .Values.providers.kubernetesIngress.namespaces -}}
+{{- $CRDNamespaces := default (include "traefik.namespace" . | list) .Values.providers.kubernetesCRD.namespaces -}}
+{{- $allNamespaces := uniq (concat $ingressNamespaces $CRDNamespaces) -}}
+
+{{- if and .Values.rbac.enabled .Values.rbac.namespaced -}}
+{{- range $allNamespaces }}
+---
 kind: Role
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
-  name: {{ template "traefik.fullname" . }}
+  name: {{ template "traefik.fullname" $ }}
+  namespace: {{ . }}
   labels:
-    app.kubernetes.io/name: {{ template "traefik.name" . }}
-    helm.sh/chart: {{ template "traefik.chart" . }}
-    app.kubernetes.io/managed-by: {{ .Release.Service }}
-    app.kubernetes.io/instance: {{ .Release.Name }}
+    {{- include "traefik.labels" $ | nindent 4 }}
 rules:
   - apiGroups:
       - ""
@@ -19,6 +23,7 @@ rules:
       - get
       - list
       - watch
+{{- if (and (has . $ingressNamespaces) $.Values.providers.kubernetesIngress.enabled) }}
   - apiGroups:
       - extensions
       - networking.k8s.io
@@ -35,8 +40,13 @@ rules:
       - ingresses/status
     verbs:
       - update
+{{- end -}}
+{{- if (and (has . $CRDNamespaces) $.Values.providers.kubernetesCRD.enabled) }}
   - apiGroups:
+      - traefik.io
+      {{- if semverCompare "<3.0.0-0" (include "imageVersion" $) }}
       - traefik.containo.us
+      {{- end }}
     resources:
       - ingressroutes
       - ingressroutetcps
@@ -47,18 +57,23 @@ rules:
       - tlsstores
       - traefikservices
       - serverstransports
+      {{- if semverCompare ">=3.0.0-0" (include "imageVersion" $) }}
+      - serverstransporttcps
+      {{- end }}
     verbs:
       - get
       - list
       - watch
-{{- if .Values.podSecurityPolicy.enabled }}
+{{- end -}}
+{{- if $.Values.podSecurityPolicy.enabled }}
   - apiGroups:
       - extensions
     resourceNames:
-      - {{ template "traefik.fullname" . }}
+      - {{ template "traefik.fullname" $ }}
     resources:
       - podsecuritypolicies
     verbs:
       - use
+{{- end -}}
 {{- end -}}
 {{- end -}}

@@ -6,6 +6,6 @@ directories:
   - path: .
     helmChart:
       name: traefik
-      version: 10.14.1
+      version: 25.0.0
       repository:
         url: https://helm.traefik.io/traefik

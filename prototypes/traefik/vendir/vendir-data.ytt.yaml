@@ -8,4 +8,4 @@ application:
   #! renovate: datasource=helm
   name: traefik
   url: https://helm.traefik.io/traefik
-  version: 10.14.1
+  version: 25.0.0

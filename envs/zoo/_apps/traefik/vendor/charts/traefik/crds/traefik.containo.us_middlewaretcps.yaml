@@ -1,23 +1,26 @@
+
+---
 apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.4.1
+    controller-gen.kubebuilder.io/version: v0.6.2
   creationTimestamp: null
-  name: tlsstores.traefik.containo.us
+  name: middlewaretcps.traefik.containo.us
 spec:
   group: traefik.containo.us
   names:
-    kind: TLSStore
-    listKind: TLSStoreList
-    plural: tlsstores
-    singular: tlsstore
+    kind: MiddlewareTCP
+    listKind: MiddlewareTCPList
+    plural: middlewaretcps
+    singular: middlewaretcp
   scope: Namespaced
   versions:
   - name: v1alpha1
     schema:
       openAPIV3Schema:
-        description: TLSStore is a specification for a TLSStore resource.
+        description: 'MiddlewareTCP is the CRD implementation of a Traefik TCP middleware.
+          More info: https://doc.traefik.io/traefik/v2.10/middlewares/overview/'
         properties:
           apiVersion:
             description: 'APIVersion defines the versioned schema of this representation
@@ -32,21 +35,28 @@ spec:
           metadata:
             type: object
           spec:
-            description: TLSStoreSpec configures a TLSStore resource.
+            description: MiddlewareTCPSpec defines the desired state of a MiddlewareTCP.
             properties:
-              defaultCertificate:
-                description: DefaultCertificate holds a secret name for the TLSOption
-                  resource.
+              inFlightConn:
+                description: InFlightConn defines the InFlightConn middleware configuration.
                 properties:
-                  secretName:
-                    description: SecretName is the name of the referenced Kubernetes
-                      Secret to specify the certificate details.
-                    type: string
-                required:
-                - secretName
+                  amount:
+                    description: Amount defines the maximum amount of allowed simultaneous
+                      connections. The middleware closes the connection if there are
+                      already amount connections opened.
+                    format: int64
+                    type: integer
                 type: object
-            required:
-            - defaultCertificate
+              ipWhiteList:
+                description: IPWhiteList defines the IPWhiteList middleware configuration.
+                properties:
+                  sourceRange:
+                    description: SourceRange defines the allowed IPs (or ranges of
+                      allowed IPs by using CIDR notation).
+                    items:
+                      type: string
+                    type: array
+                type: object
             type: object
         required:
         - metadata

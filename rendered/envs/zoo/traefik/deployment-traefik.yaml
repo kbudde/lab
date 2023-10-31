@@ -4,10 +4,10 @@ metadata:
   annotations:
     a8r.io/repository: git@github.com:kbudde/lab.git
   labels:
-    app.kubernetes.io/instance: traefik
+    app.kubernetes.io/instance: traefik-traefik
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/name: traefik
-    helm.sh/chart: traefik-10.14.1
+    helm.sh/chart: traefik-25.0.0
   name: traefik
   namespace: traefik
 spec:
@@ -15,12 +15,12 @@ spec:
   replicas: 1
   selector:
     matchLabels:
-      app.kubernetes.io/instance: traefik
+      app.kubernetes.io/instance: traefik-traefik
       app.kubernetes.io/name: traefik
   strategy:
     rollingUpdate:
       maxSurge: 1
-      maxUnavailable: 1
+      maxUnavailable: 0
     type: RollingUpdate
   template:
     metadata:
@@ -29,10 +29,10 @@ spec:
         prometheus.io/port: "9100"
         prometheus.io/scrape: "true"
       labels:
-        app.kubernetes.io/instance: traefik
+        app.kubernetes.io/instance: traefik-traefik
         app.kubernetes.io/managed-by: Helm
         app.kubernetes.io/name: traefik
-        helm.sh/chart: traefik-10.14.1
+        helm.sh/chart: traefik-25.0.0
     spec:
       containers:
         - args:
@@ -50,7 +50,6 @@ spec:
             - --providers.kubernetesingress.ingressendpoint.publishedservice=traefik/traefik
             - --entrypoints.websecure.http.tls=true
             - --entrypoints.websecure.http.tls.certResolver=default
-            - --pilot.dashboard=false
             - --certificatesresolvers.default.acme.storage=/data/acme-budd.ee.json
             - --certificatesresolvers.default.acme.dnschallenge=true
             - --certificatesresolvers.default.acme.dnschallenge.provider=httpreq
@@ -61,14 +60,16 @@ spec:
           env:
             - name: HTTPREQ_ENDPOINT
               value: http://mailinabox:8080
-          image: traefik:2.6.0
+          image: docker.io/traefik:v2.10.5
           imagePullPolicy: IfNotPresent
+          lifecycle: null
           livenessProbe:
             failureThreshold: 3
             httpGet:
               path: /ping
               port: 9000
-            initialDelaySeconds: 10
+              scheme: HTTP
+            initialDelaySeconds: 2
             periodSeconds: 10
             successThreshold: 1
             timeoutSeconds: 2
@@ -91,7 +92,8 @@ spec:
             httpGet:
               path: /ping
               port: 9000
-            initialDelaySeconds: 10
+              scheme: HTTP
+            initialDelaySeconds: 2
             periodSeconds: 10
             successThreshold: 1
             timeoutSeconds: 2
@@ -102,13 +104,11 @@ spec:
               cpu: 100m
               memory: 50Mi
           securityContext:
+            allowPrivilegeEscalation: false
             capabilities:
               drop:
                 - ALL
             readOnlyRootFilesystem: true
-            runAsGroup: 65532
-            runAsNonRoot: true
-            runAsUser: 65532
           volumeMounts:
             - mountPath: /data
               name: data
@@ -119,7 +119,7 @@ spec:
         - command:
             - sh
             - -c
-            - chmod -Rv 600 /data/*
+            - chmod -Rv 600 /data/*.json
           image: busybox:1.31.1
           name: volume-permissions
           volumeMounts:
@@ -132,7 +132,10 @@ spec:
           image: busybox:1.31.1
           name: delay
       securityContext:
-        fsGroup: 65532
+        fsGroupChangePolicy: OnRootMismatch
+        runAsGroup: 65532
+        runAsNonRoot: true
+        runAsUser: 65532
       serviceAccountName: traefik
       terminationGracePeriodSeconds: 60
       volumes:
