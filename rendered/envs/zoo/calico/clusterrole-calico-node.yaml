@@ -1,0 +1,161 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  annotations:
+    a8r.io/repository: git@github.com:kbudde/lab.git
+  name: calico-node
+  namespace: kube-system
+rules:
+  - apiGroups:
+      - ""
+    resourceNames:
+      - calico-cni-plugin
+    resources:
+      - serviceaccounts/token
+    verbs:
+      - create
+  - apiGroups:
+      - ""
+    resources:
+      - pods
+      - nodes
+      - namespaces
+    verbs:
+      - get
+  - apiGroups:
+      - discovery.k8s.io
+    resources:
+      - endpointslices
+    verbs:
+      - watch
+      - list
+  - apiGroups:
+      - ""
+    resources:
+      - endpoints
+      - services
+    verbs:
+      - watch
+      - list
+      - get
+  - apiGroups:
+      - ""
+    resources:
+      - configmaps
+    verbs:
+      - get
+  - apiGroups:
+      - ""
+    resources:
+      - nodes/status
+    verbs:
+      - patch
+      - update
+  - apiGroups:
+      - networking.k8s.io
+    resources:
+      - networkpolicies
+    verbs:
+      - watch
+      - list
+  - apiGroups:
+      - ""
+    resources:
+      - pods
+      - namespaces
+      - serviceaccounts
+    verbs:
+      - list
+      - watch
+  - apiGroups:
+      - ""
+    resources:
+      - pods/status
+    verbs:
+      - patch
+  - apiGroups:
+      - crd.projectcalico.org
+    resources:
+      - globalfelixconfigs
+      - felixconfigurations
+      - bgppeers
+      - bgpfilters
+      - globalbgpconfigs
+      - bgpconfigurations
+      - ippools
+      - ipreservations
+      - ipamblocks
+      - globalnetworkpolicies
+      - globalnetworksets
+      - networkpolicies
+      - networksets
+      - clusterinformations
+      - hostendpoints
+      - blockaffinities
+      - caliconodestatuses
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - crd.projectcalico.org
+    resources:
+      - ippools
+      - felixconfigurations
+      - clusterinformations
+    verbs:
+      - create
+      - update
+  - apiGroups:
+      - crd.projectcalico.org
+    resources:
+      - caliconodestatuses
+    verbs:
+      - update
+  - apiGroups:
+      - ""
+    resources:
+      - nodes
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - crd.projectcalico.org
+    resources:
+      - bgpconfigurations
+      - bgppeers
+    verbs:
+      - create
+      - update
+  - apiGroups:
+      - crd.projectcalico.org
+    resources:
+      - blockaffinities
+      - ipamblocks
+      - ipamhandles
+    verbs:
+      - get
+      - list
+      - create
+      - update
+      - delete
+  - apiGroups:
+      - crd.projectcalico.org
+    resources:
+      - ipamconfigs
+    verbs:
+      - get
+      - create
+  - apiGroups:
+      - crd.projectcalico.org
+    resources:
+      - blockaffinities
+    verbs:
+      - watch
+  - apiGroups:
+      - apps
+    resources:
+      - daemonsets
+    verbs:
+      - get

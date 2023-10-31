@@ -13,6 +13,7 @@ environment:
   - proto: longhorn
     name: longhorn-system
   - proto: traefik
+  - proto: calico
 shared:
   domain: "zoo.budd.ee"
 
