@@ -54,3 +54,5 @@ secretRefs:
 configRefs:
   storageusersConfigRef: storage-users
   graphConfigRef: graph
+monitoring:
+  enabled: true

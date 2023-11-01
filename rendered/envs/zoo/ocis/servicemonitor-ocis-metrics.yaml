@@ -1,0 +1,16 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  annotations:
+    a8r.io/repository: git@github.com:kbudde/lab.git
+  name: ocis-metrics
+  namespace: ocis
+spec:
+  endpoints:
+    - interval: 60s
+      path: /metrics
+      port: metrics-debug
+      scrapeTimeout: 60s
+  selector:
+    matchLabels:
+      ocis-metrics: enabled

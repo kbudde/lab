@@ -101,3 +101,6 @@ configRefs:
   storageusersConfigRef: "storage-users"
   #! -- Reference to an existing graph config.
   graphConfigRef: "graph"
+
+monitoring:
+  enabled: true
