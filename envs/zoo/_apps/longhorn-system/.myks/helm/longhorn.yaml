@@ -1,0 +1,7 @@
+longhornUI:
+  replicas: 1
+ingress:
+  enabled: true
+  host: longhorn.zoo.budd.ee
+persistence:
+  defaultClass: false

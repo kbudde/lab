@@ -6,7 +6,7 @@ data:
     metadata:
       name: longhorn
       annotations:
-        storageclass.kubernetes.io/is-default-class: "true"
+        storageclass.kubernetes.io/is-default-class: "false"
     provisioner: driver.longhorn.io
     allowVolumeExpansion: true
     reclaimPolicy: "Delete"
@@ -23,7 +23,9 @@ metadata:
     a8r.io/repository: git@github.com:kbudde/lab.git
   labels:
     app.kubernetes.io/instance: longhorn
+    app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/name: longhorn
     app.kubernetes.io/version: v1.5.1
+    helm.sh/chart: longhorn-1.5.1
   name: longhorn-storageclass
   namespace: longhorn-system

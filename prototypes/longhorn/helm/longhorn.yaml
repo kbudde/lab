@@ -1,0 +1,12 @@
+#@ load("@ytt:data", "data")
+#@ shared = data.values.shared
+---
+longhornUI:
+  replicas: 1
+
+ingress:
+  enabled: true
+  host:  #@ "longhorn." + shared.domain
+
+persistence:
+  defaultClass: false

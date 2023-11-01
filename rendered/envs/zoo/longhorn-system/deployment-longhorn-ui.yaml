@@ -6,12 +6,14 @@ metadata:
   labels:
     app: longhorn-ui
     app.kubernetes.io/instance: longhorn
+    app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/name: longhorn
     app.kubernetes.io/version: v1.5.1
+    helm.sh/chart: longhorn-1.5.1
   name: longhorn-ui
   namespace: longhorn-system
 spec:
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
       app: longhorn-ui
@@ -20,8 +22,10 @@ spec:
       labels:
         app: longhorn-ui
         app.kubernetes.io/instance: longhorn
+        app.kubernetes.io/managed-by: Helm
         app.kubernetes.io/name: longhorn
         app.kubernetes.io/version: v1.5.1
+        helm.sh/chart: longhorn-1.5.1
     spec:
       affinity:
         podAntiAffinity:

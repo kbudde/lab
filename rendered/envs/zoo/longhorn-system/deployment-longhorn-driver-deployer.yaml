@@ -5,8 +5,10 @@ metadata:
     a8r.io/repository: git@github.com:kbudde/lab.git
   labels:
     app.kubernetes.io/instance: longhorn
+    app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/name: longhorn
     app.kubernetes.io/version: v1.5.1
+    helm.sh/chart: longhorn-1.5.1
   name: longhorn-driver-deployer
   namespace: longhorn-system
 spec:
@@ -19,8 +21,10 @@ spec:
       labels:
         app: longhorn-driver-deployer
         app.kubernetes.io/instance: longhorn
+        app.kubernetes.io/managed-by: Helm
         app.kubernetes.io/name: longhorn
         app.kubernetes.io/version: v1.5.1
+        helm.sh/chart: longhorn-1.5.1
     spec:
       containers:
         - command:
