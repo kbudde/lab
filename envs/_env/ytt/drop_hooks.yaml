@@ -1,0 +1,17 @@
+#@ load("@ytt:overlay", "overlay")
+#@ load("@ytt:regexp", "regexp")
+
+
+
+#@ def helm_hooks(x, l, r):
+#@ if not ("metadata" in l and "annotations" in l["metadata"] and "helm.sh/hook" in l["metadata"]["annotations"]):
+#@   return False
+#@ end
+#! keeps post-install, post-upgrade only
+#@ return regexp.match("(pre-install|pre-delete|post-delete|pre-upgrade|pre-rollback|post-rollback|test)", l["metadata"]["annotations"]["helm.sh/hook"])
+#@ end
+
+
+#@overlay/match by=helm_hooks, expects="0+"
+#@overlay/remove
+---
