@@ -1,10 +1,7 @@
 #@ load("@ytt:data", "data")
 #@ load("@ytt:overlay", "overlay")
 
-#@ set_ns=data.values.myks.context.app
-#@ if data.values.application.namespace.namespace:
-#@   set_ns=data.values.application.namespace.namespace
-#@ end
+#@ set_ns=data.values.application.namespace.namespace or data.values.myks.context.app
 
 #! create namespace resource for each app
 #@ if/end data.values.application.namespace.create:
