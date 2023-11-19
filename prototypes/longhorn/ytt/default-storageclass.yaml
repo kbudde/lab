@@ -9,6 +9,6 @@ parameters:
   numberOfReplicas: "2"  
   staleReplicaTimeout: "2880"  
 provisioner: driver.longhorn.io
-reclaimPolicy: Delete 
+reclaimPolicy: Retain 
 volumeBindingMode: Immediate
 allowVolumeExpansion: true
