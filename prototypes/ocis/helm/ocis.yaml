@@ -36,7 +36,7 @@ services:
     persistence:
       enabled: true
       chownInitContainer: true
-      size: 10Gi
+      size: 20Gi
   store:
     persistence:
       enabled: true
