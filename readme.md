@@ -1,6 +1,6 @@
 # personal pi cluster k8s manifests
 
-Rendered manifests using github.com/mykes/myks.
+Rendered manifests using [github.com/mykso/myks](https://github.com/mykso/myks).
 
 ## Secret management
 
