@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    a8r.io/repository: git@github.com:kbudde/lab.git
+  labels:
+    app: linkwarden-db
+  name: linkwarden-db
+  namespace: linkwarden
+spec:
+  ports:
+    - name: postgres
+      port: 5432
+      protocol: TCP
+      targetPort: 5432
+  selector:
+    app: linkwarden-db
+  type: ClusterIP

@@ -1,0 +1,35 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: linkwarden
+  namespace: linkwarden
+spec:
+  selector:
+    matchLabels:
+      app: linkwarden
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: linkwarden
+    spec:
+      containers:
+      - envFrom:
+          - secretRef:
+              name: linkwarden
+        image: ghcr.io/linkwarden/linkwarden:latest
+        imagePullPolicy: IfNotPresent
+        name: linkwarden
+        ports:
+        - containerPort: 3000
+          name: web
+          protocol: TCP
+        volumeMounts:
+        - mountPath: /data/data
+          name: data
+      volumes:
+      - name: data
+        persistentVolumeClaim:
+          claimName: linkwarden

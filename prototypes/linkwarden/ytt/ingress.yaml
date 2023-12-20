@@ -1,0 +1,19 @@
+#@ load("@ytt:data", "data")
+#@ shared = data.values.shared
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: linkwarden
+spec:
+  rules:
+    - host: #@ "linkwarden." + shared.domain
+      http:
+        paths:
+          - backend:
+              service:
+                name: linkwarden
+                port:
+                  number: 3000
+            path: /
+            pathType: ImplementationSpecific

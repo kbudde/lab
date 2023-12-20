@@ -1,0 +1,41 @@
+#@ load("@ytt:data", "data")
+#@ environment = data.values.environment
+#@ password = "<path:secrets/{id}.linkwarden.yaml#DB_PASS>".format(id=environment.id)
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: linkwarden-db
+  namespace: linkwarden-db
+spec:
+  selector:
+    matchLabels:
+      app: linkwarden-db
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: linkwarden-db
+    spec:
+      containers:
+      - envFrom:
+          - secretRef:
+              name: linkwarden
+        image: postgres:16-alpine
+        imagePullPolicy: IfNotPresent
+        name: linkwarden-db
+        ports:
+        - containerPort: 5432
+          name: postgres
+          protocol: TCP
+        env:
+        - name: PGDATA
+          value: /var/lib/postgresql/data/pgdata
+        volumeMounts:
+        - mountPath: /var/lib/postgresql/data
+          name: data
+      volumes:
+      - name: data
+        persistentVolumeClaim:
+          claimName: linkwarden-db

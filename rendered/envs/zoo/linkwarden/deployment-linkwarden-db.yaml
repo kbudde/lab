@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    a8r.io/repository: git@github.com:kbudde/lab.git
+  name: linkwarden-db
+  namespace: linkwarden
+spec:
+  selector:
+    matchLabels:
+      app: linkwarden-db
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: linkwarden-db
+    spec:
+      containers:
+        - env:
+            - name: PGDATA
+              value: /var/lib/postgresql/data/pgdata
+          envFrom:
+            - secretRef:
+                name: linkwarden
+          image: postgres:16-alpine
+          imagePullPolicy: IfNotPresent
+          name: linkwarden-db
+          ports:
+            - containerPort: 5432
+              name: postgres
+              protocol: TCP
+          volumeMounts:
+            - mountPath: /var/lib/postgresql/data
+              name: data
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: linkwarden-db
