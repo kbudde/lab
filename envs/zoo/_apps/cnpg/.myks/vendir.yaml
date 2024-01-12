@@ -1,0 +1,11 @@
+apiVersion: vendir.k14s.io/v1alpha1
+kind: Config
+directories:
+- path: envs/zoo/_apps/cnpg/vendor/charts/cloudnative-pg
+  contents:
+  - path: .
+    helmChart:
+      name: cloudnative-pg
+      version: 0.20.0
+      repository:
+        url: https://cloudnative-pg.github.io/charts
