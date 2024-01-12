@@ -1,0 +1,9 @@
+apiVersion: vendir.k14s.io/v1alpha1
+directories:
+- contents:
+  - helmChart:
+      appVersion: 1.22.0
+      version: 0.20.0
+    path: .
+  path: envs/zoo/_apps/cnpg/vendor/charts/cloudnative-pg
+kind: LockConfig
