@@ -1,0 +1,16 @@
+#@ def cnpg_db(name, size="1Gi", instances=3):
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: #@ name
+spec:
+  instances: #@ instances
+  storage:
+    size: #@ size
+  maxSyncReplicas: 0
+  minSyncReplicas: 0
+  primaryUpdateMethod: switchover
+  replicationSlots:
+    highAvailability:
+      enabled: true
+#@ end

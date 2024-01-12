@@ -1,0 +1,17 @@
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  annotations:
+    a8r.io/repository: git@github.com:kbudde/lab.git
+  name: gitea
+  namespace: gitea
+spec:
+  instances: 2
+  maxSyncReplicas: 0
+  minSyncReplicas: 0
+  primaryUpdateMethod: switchover
+  replicationSlots:
+    highAvailability:
+      enabled: true
+  storage:
+    size: 1Gi

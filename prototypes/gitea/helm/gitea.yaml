@@ -1,0 +1,45 @@
+strategy:
+  type: "Recreate"
+
+ingress:
+  enabled: true
+  className: traefik
+  hosts:
+    - host: git.zoo.budd.ee
+      paths:
+        - path: /
+          pathType: Prefix
+  tls: 
+    - secretName: gitea-tls
+      hosts:
+        - git.zoo.budd.ee
+
+gitea:
+  admin:
+    username: gitea_admin
+    password: r8sA8CPHD9!bt6d
+    email: "gitea@local.domain"
+
+  metrics:
+    enabled: true
+    serviceMonitor:
+      enabled: true
+
+  config:
+    database:
+      DB_TYPE: mysql
+      HOST: <mysql HOST>
+      NAME: gitea
+      USER: root
+      PASSWD: gitea
+      SCHEMA: gitea
+
+postgresql:
+  enabled: false
+postgresql-ha:
+  enabled: false
+redis-cluster:
+  enabled: false
+
+
+  
