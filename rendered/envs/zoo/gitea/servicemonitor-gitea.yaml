@@ -1,0 +1,22 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  annotations:
+    a8r.io/repository: git@github.com:kbudde/lab.git
+  labels:
+    app: gitea
+    app.kubernetes.io/instance: gitea
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: gitea
+    app.kubernetes.io/version: 1.21.3
+    helm.sh/chart: gitea-10.0.2
+    version: 1.21.3
+  name: gitea
+  namespace: gitea
+spec:
+  endpoints:
+    - port: http
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: gitea
+      app.kubernetes.io/name: gitea

@@ -1,0 +1,216 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    a8r.io/repository: git@github.com:kbudde/lab.git
+  labels:
+    app: gitea
+    app.kubernetes.io/instance: gitea
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: gitea
+    app.kubernetes.io/version: 1.21.3
+    helm.sh/chart: gitea-10.0.2
+    version: 1.21.3
+  name: gitea
+  namespace: gitea
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: gitea
+      app.kubernetes.io/name: gitea
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      annotations:
+        checksum/config: a3b72d1f34fadc06f05663a71f6119767e281749323ee2bc826bd79bb198b1e0
+      labels:
+        app: gitea
+        app.kubernetes.io/instance: gitea
+        app.kubernetes.io/managed-by: Helm
+        app.kubernetes.io/name: gitea
+        app.kubernetes.io/version: 1.21.3
+        helm.sh/chart: gitea-10.0.2
+        version: 1.21.3
+    spec:
+      containers:
+        - env:
+            - name: SSH_LISTEN_PORT
+              value: "2222"
+            - name: SSH_PORT
+              value: "22"
+            - name: GITEA_APP_INI
+              value: /data/gitea/conf/app.ini
+            - name: GITEA_CUSTOM
+              value: /data/gitea
+            - name: GITEA_WORK_DIR
+              value: /data
+            - name: GITEA_TEMP
+              value: /tmp/gitea
+            - name: TMPDIR
+              value: /tmp/gitea
+            - name: HOME
+              value: /data/gitea/git
+          image: gitea/gitea:1.21.3-rootless
+          imagePullPolicy: IfNotPresent
+          livenessProbe:
+            failureThreshold: 10
+            initialDelaySeconds: 200
+            periodSeconds: 10
+            successThreshold: 1
+            tcpSocket:
+              port: http
+            timeoutSeconds: 1
+          name: gitea
+          ports:
+            - containerPort: 2222
+              name: ssh
+            - containerPort: 3000
+              name: http
+          readinessProbe:
+            failureThreshold: 3
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            successThreshold: 1
+            tcpSocket:
+              port: http
+            timeoutSeconds: 1
+          resources: {}
+          securityContext: {}
+          volumeMounts:
+            - mountPath: /tmp
+              name: temp
+            - mountPath: /data
+              name: data
+      initContainers:
+        - command:
+            - /usr/sbin/init_directory_structure.sh
+          env:
+            - name: GITEA_APP_INI
+              value: /data/gitea/conf/app.ini
+            - name: GITEA_CUSTOM
+              value: /data/gitea
+            - name: GITEA_WORK_DIR
+              value: /data
+            - name: GITEA_TEMP
+              value: /tmp/gitea
+          image: gitea/gitea:1.21.3-rootless
+          imagePullPolicy: IfNotPresent
+          name: init-directories
+          resources:
+            limits: {}
+            requests:
+              cpu: 100m
+              memory: 128Mi
+          securityContext: {}
+          volumeMounts:
+            - mountPath: /usr/sbin
+              name: init
+            - mountPath: /tmp
+              name: temp
+            - mountPath: /data
+              name: data
+        - command:
+            - /usr/sbin/config_environment.sh
+          env:
+            - name: GITEA_APP_INI
+              value: /data/gitea/conf/app.ini
+            - name: GITEA_CUSTOM
+              value: /data/gitea
+            - name: GITEA_WORK_DIR
+              value: /data
+            - name: GITEA_TEMP
+              value: /tmp/gitea
+            - name: GITEA__DATABASE__HOST
+              valueFrom:
+                secretKeyRef:
+                  key: host
+                  name: gitea-app
+            - name: GITEA__DATABASE__NAME
+              valueFrom:
+                secretKeyRef:
+                  key: dbname
+                  name: gitea-app
+            - name: GITEA__DATABASE__USER
+              valueFrom:
+                secretKeyRef:
+                  key: username
+                  name: gitea-app
+            - name: GITEA__DATABASE__PASSWD
+              valueFrom:
+                secretKeyRef:
+                  key: password
+                  name: gitea-app
+          image: gitea/gitea:1.21.3-rootless
+          imagePullPolicy: IfNotPresent
+          name: init-app-ini
+          resources:
+            limits: {}
+            requests:
+              cpu: 100m
+              memory: 128Mi
+          securityContext: {}
+          volumeMounts:
+            - mountPath: /usr/sbin
+              name: config
+            - mountPath: /tmp
+              name: temp
+            - mountPath: /data
+              name: data
+            - mountPath: /env-to-ini-mounts/inlines/
+              name: inline-config-sources
+        - command:
+            - /usr/sbin/configure_gitea.sh
+          env:
+            - name: GITEA_APP_INI
+              value: /data/gitea/conf/app.ini
+            - name: GITEA_CUSTOM
+              value: /data/gitea
+            - name: GITEA_WORK_DIR
+              value: /data
+            - name: GITEA_TEMP
+              value: /tmp/gitea
+            - name: HOME
+              value: /data/gitea/git
+            - name: GITEA_ADMIN_USERNAME
+              value: kris
+            - name: GITEA_ADMIN_PASSWORD
+              value: <path:secrets/zoo.gitea.yaml#admin_pass>
+          image: gitea/gitea:1.21.3-rootless
+          imagePullPolicy: IfNotPresent
+          name: configure-gitea
+          resources:
+            limits: {}
+            requests:
+              cpu: 100m
+              memory: 128Mi
+          securityContext:
+            runAsUser: 1000
+          volumeMounts:
+            - mountPath: /usr/sbin
+              name: init
+            - mountPath: /tmp
+              name: temp
+            - mountPath: /data
+              name: data
+      securityContext:
+        fsGroup: 1000
+      terminationGracePeriodSeconds: 60
+      volumes:
+        - name: init
+          secret:
+            defaultMode: 110
+            secretName: gitea-init
+        - name: config
+          secret:
+            defaultMode: 110
+            secretName: gitea
+        - name: inline-config-sources
+          secret:
+            secretName: gitea-inline-config
+        - emptyDir: {}
+          name: temp
+        - name: data
+          persistentVolumeClaim:
+            claimName: gitea-shared-storage

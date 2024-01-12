@@ -1,0 +1,54 @@
+strategy:
+  type: Recreate
+ingress:
+  enabled: true
+  className: traefik
+  hosts:
+  - host: git.zoo.budd.ee
+    paths:
+    - path: /
+      pathType: Prefix
+  tls:
+  - secretName: gitea-tls
+    hosts:
+    - git.zoo.budd.ee
+  apiVersion: networking.k8s.io/v1
+gitea:
+  admin:
+    username: kris
+    password: <path:secrets/zoo.gitea.yaml#admin_pass>
+    email: kris@budd.ee
+  metrics:
+    enabled: true
+    serviceMonitor:
+      enabled: true
+  config:
+    database:
+      DB_TYPE: postgres
+  additionalConfigFromEnvs:
+  - name: GITEA__DATABASE__HOST
+    valueFrom:
+      secretKeyRef:
+        name: gitea-app
+        key: host
+  - name: GITEA__DATABASE__NAME
+    valueFrom:
+      secretKeyRef:
+        name: gitea-app
+        key: dbname
+  - name: GITEA__DATABASE__USER
+    valueFrom:
+      secretKeyRef:
+        name: gitea-app
+        key: username
+  - name: GITEA__DATABASE__PASSWD
+    valueFrom:
+      secretKeyRef:
+        name: gitea-app
+        key: password
+postgresql:
+  enabled: false
+postgresql-ha:
+  enabled: false
+redis-cluster:
+  enabled: false
