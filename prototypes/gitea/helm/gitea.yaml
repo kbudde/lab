@@ -13,12 +13,13 @@ ingress:
     - secretName: gitea-tls
       hosts:
         - git.zoo.budd.ee
+  apiVersion: networking.k8s.io/v1
 
 gitea:
   admin:
-    username: gitea_admin
-    password: r8sA8CPHD9!bt6d
-    email: "gitea@local.domain"
+    username: kris
+    password: <path:secrets/zoo.gitea.yaml#admin_pass>
+    email: "kris@budd.ee"
 
   metrics:
     enabled: true
@@ -27,12 +28,29 @@ gitea:
 
   config:
     database:
-      DB_TYPE: mysql
-      HOST: <mysql HOST>
-      NAME: gitea
-      USER: root
-      PASSWD: gitea
-      SCHEMA: gitea
+      DB_TYPE: postgres
+
+  additionalConfigFromEnvs:
+    - name: GITEA__DATABASE__HOST
+      valueFrom:
+        secretKeyRef:
+          name: gitea-app
+          key: host
+    - name: GITEA__DATABASE__NAME
+      valueFrom:
+        secretKeyRef:
+          name: gitea-app
+          key: dbname
+    - name: GITEA__DATABASE__USER
+      valueFrom:
+        secretKeyRef:
+          name: gitea-app
+          key: username
+    - name: GITEA__DATABASE__PASSWD
+      valueFrom:
+        secretKeyRef:
+          name: gitea-app
+          key: password
 
 postgresql:
   enabled: false
