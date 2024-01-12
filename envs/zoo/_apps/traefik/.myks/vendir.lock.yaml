@@ -5,5 +5,5 @@ directories:
       appVersion: v2.10.5
       version: 25.0.0
     path: .
-  path: charts/traefik
+  path: envs/zoo/_apps/traefik/vendor/charts/traefik
 kind: LockConfig

@@ -5,5 +5,5 @@ directories:
       appVersion: v0.107.2
       version: 0.1.0
     path: .
-  path: charts/adguard-home
+  path: envs/zoo/_apps/adguard-home/vendor/charts/adguard-home
 kind: LockConfig

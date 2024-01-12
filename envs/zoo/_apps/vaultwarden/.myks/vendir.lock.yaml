@@ -7,5 +7,5 @@ directories:
       tags:
       - v0.14.0
     path: .
-  path: charts/vaultwarden
+  path: envs/zoo/_apps/vaultwarden/vendor/charts/vaultwarden
 kind: LockConfig

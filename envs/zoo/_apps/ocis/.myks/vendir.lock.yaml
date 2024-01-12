@@ -7,5 +7,5 @@ directories:
       tags:
       - v0.5.0
     path: .
-  path: charts/ocis
+  path: envs/zoo/_apps/ocis/vendor/charts/ocis
 kind: LockConfig

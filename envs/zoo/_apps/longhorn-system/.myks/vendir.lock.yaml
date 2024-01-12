@@ -5,5 +5,5 @@ directories:
       appVersion: v1.5.1
       version: 1.5.1
     path: .
-  path: charts/longhorn
+  path: envs/zoo/_apps/longhorn-system/vendor/charts/longhorn
 kind: LockConfig

@@ -7,5 +7,5 @@ directories:
       tags:
       - v0.13.12
     path: config/manifests/
-  path: ytt/
+  path: envs/zoo/_apps/metallb-system/vendor/ytt/
 kind: LockConfig
