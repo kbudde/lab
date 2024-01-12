@@ -17,7 +17,7 @@ environment:
   - proto: grafana-agent
   - proto: goldpinger
   - proto: linkwarden
-  #!- proto: gitea
+  - proto: gitea
   - proto: cnpg
 shared:
   domain: "zoo.budd.ee"
