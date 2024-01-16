@@ -3,7 +3,6 @@
 environment:
   id: zoo
   applications:
-  - proto: ocis
   - proto: adguard-home
   - proto: octopi
   - proto: metallb
