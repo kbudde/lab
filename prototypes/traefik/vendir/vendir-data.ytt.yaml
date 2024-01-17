@@ -1,11 +1,7 @@
-#@data/values-schema
+#@data/values
 ---
-#@overlay/match-child-defaults missing_ok=True
 application:
-  #! WARNING: The order of the keys (alphabetical) is important for renovate.
-  #!          When changed, renovate won't be able to detect the new version.
-  #!          See renovate.json for more details.
-  #! renovate: datasource=helm
-  name: traefik
-  url: https://helm.traefik.io/traefik
-  version: 25.0.0
+  helmCharts:
+    - name: traefik
+      url: https://helm.traefik.io/traefik
+      version: 25.0.0

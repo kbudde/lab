@@ -9,4 +9,4 @@ directories:
       ref: v0.13.12
     newRootPath: config/manifests/
     includePaths:
-    - config/manifests//metallb-native.yaml
+    - config/manifests/metallb-native.yaml

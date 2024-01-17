@@ -8,3 +8,4 @@ directories:
       url: https://github.com/guerzon/vaultwarden
       ref: v0.14.0
     newRootPath: charts/vaultwarden
+    includePaths: []

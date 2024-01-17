@@ -1,11 +1,11 @@
-#@data/values-schema
+#@data/values
 ---
 #@overlay/match-child-defaults missing_ok=True
 application:
-  #! WARNING: The order of the keys (alphabetical) is important for renovate.
-  #!          When changed, renovate won't be able to detect the new version.
-  #!          See renovate.json for more details.
-  #! renovate: datasource=helm
-  name: vaultwarden
-  url: https://github.com/guerzon/vaultwarden
-  version: 0.14.0
+  gitRepos:
+    - name: vaultwarden
+      outputPath: charts/vaultwarden
+      path: .
+      url: https://github.com/guerzon/vaultwarden
+      version: v0.14.0
+      newRootPath: charts/vaultwarden
