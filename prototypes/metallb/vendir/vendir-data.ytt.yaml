@@ -1,14 +1,14 @@
-#@data/values-schema
+#@data/values
 ---
 #@overlay/match-child-defaults missing_ok=True
 application:
-  #! WARNING: The order of the keys (alphabetical) is important for renovate.
-  #!          When changed, renovate won't be able to detect the new version.
-  #!          See renovate.json for more details.
-  #! renovate: datasource=helm
-  name: metallb
-  url: https://github.com/metallb/metallb/
-  version: 0.13.12
-  path: config/manifests/
-  files:
-    - metallb-native.yaml
+  gitRepos:
+    - name: metallb
+      url: https://github.com/metallb/metallb/
+      version: v0.13.12
+      path: config/manifests/
+      newRootPath: config/manifests/
+      files:
+        - metallb-native.yaml
+      includePaths:
+        - config/manifests/metallb-native.yaml

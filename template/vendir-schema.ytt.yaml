@@ -1,0 +1,19 @@
+#@data/values-schema
+---
+#@overlay/match-child-defaults missing_ok=True
+application:
+  gitRepos:
+    - name: repoName
+      url: RepoUrl
+      version: versionNUmber
+      path: path
+      newRootPath: newRootPath
+      files:
+        - filenames.yaml
+      includePaths:
+        - includes.yaml
+      outputPath: ytt/
+  helmCharts:
+    - name: HelmChartName
+      url: HelmChartUrl
+      version: versionNumber
