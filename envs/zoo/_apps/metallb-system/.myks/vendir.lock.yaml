@@ -6,6 +6,6 @@ directories:
       sha: 4f7e29972652a6f415ad42898d0b5ef5adc06440
       tags:
       - v0.13.12
-    path: config/manifests/
+    path: .
   path: envs/zoo/_apps/metallb-system/vendor/ytt/
 kind: LockConfig

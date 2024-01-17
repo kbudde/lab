@@ -16,7 +16,7 @@ directories:
 #@ for myApp in app.managed:
 - path: #@ pathForKind(myApp.kind, myApp.name)
   contents:
-    - path: #@ myApp.path or "."
+    - path: .
       #@ if/end myApp.source == "git":
       git:
         url: #@ myApp.url

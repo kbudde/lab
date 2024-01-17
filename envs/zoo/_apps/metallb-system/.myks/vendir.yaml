@@ -3,7 +3,7 @@ kind: Config
 directories:
 - path: envs/zoo/_apps/metallb-system/vendor/ytt/
   contents:
-  - path: config/manifests/
+  - path: .
     git:
       url: https://github.com/metallb/metallb/
       ref: v0.13.12
