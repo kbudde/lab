@@ -2,19 +2,34 @@
 ---
 #@overlay/match-child-defaults missing_ok=True
 application:
+  #@schema/title "List of vendored applications"
+  #@schema/desc "Each vendored application is a git repository or a helm chart. Only one application of each kind per prototype is supported."
   managed:
-    - #@schema/validation min_len=1
+    - #@schema/title "Application name"
+      #@schema/desc "For helm charts, this is the helm chart name."
+      #@schema/validation min_len=1
       name: ""
+      #@schema/title "Application kind"
+      #@schema/desc "Depending of the vendored application kind, further processing is done. For example, for helm charts, the chart is rendered."
       #@schema/validation one_of=["ytt", "helm", "static", "ytt-pkg"]
       kind: ""
+      #@schema/title "Application source as used by vendir"
+      #@schema/desc "Supports git and helm repositories."
       #@schema/validation one_of=["git", "helmChart"]
       source: ""
+      #@schema/title "Url to the application source"
+      #@schema/desc "For git repositories, this is the git url. For helm charts, this is the helm chart url."
       #@schema/validation min_len=1
       url: ""
+      #@schema/title "Version of the application"
+      #@schema/desc "For git repositories, this is the git ref. For helm charts, this is the helm chart version."
       #@schema/validation min_len=1
       version: ""
-      path: ""
+      #@schema/title "root path in the vendored application"
+      #@schema/desc "For git repositories, this is the root path in the git repository."
       newRootPath: ""
+      #@schema/title "include files"
+      #@schema/desc "For git repositories, this is the list of files to include in the vendored application."
       includePaths:
         - includes.yaml
 
