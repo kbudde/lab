@@ -5,6 +5,6 @@ application:
   managed:
     - name: adguard-home
       kind: helm
-      source: helm
+      source: helmChart
       url: https://helm-charts.rm3l.org
       version: 0.1.0

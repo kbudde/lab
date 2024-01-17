@@ -21,7 +21,7 @@ directories:
       git:
         url: #@ myApp.url
         ref: #@ myApp.version
-      #@ if/end myApp.source == "helm":
+      #@ if/end myApp.source == "helmChart":
       helmChart:
         name: #@ myApp.name
         version: #@ myApp.version
