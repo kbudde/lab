@@ -2,7 +2,9 @@
 ---
 #@overlay/match-child-defaults missing_ok=True
 application:
-  helmCharts:
+  managed:
     - name: k8s-monitoring
+      kind: helm
+      source: helm
       url: https://grafana.github.io/helm-charts
       version: 0.3.0

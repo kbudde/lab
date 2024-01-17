@@ -2,7 +2,9 @@
 ---
 #@overlay/match-child-defaults missing_ok=True
 application:
-  helmCharts:
+  managed:
     - name: adguard-home
+      kind: helm
+      source: helm
       url: https://helm-charts.rm3l.org
       version: 0.1.0

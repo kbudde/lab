@@ -2,13 +2,13 @@
 ---
 #@overlay/match-child-defaults missing_ok=True
 application:
-  gitRepos:
+  managed:
     - name: metallb
+      kind: ytt
+      source: git
       url: https://github.com/metallb/metallb/
       version: v0.13.12
       path: config/manifests/
       newRootPath: config/manifests/
-      files:
-        - metallb-native.yaml
       includePaths:
         - config/manifests/metallb-native.yaml

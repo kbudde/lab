@@ -1,7 +1,9 @@
 #@data/values
 ---
 application:
-  helmCharts:
+  managed:
     - name: traefik
+      kind: helm
+      source: helm
       url: https://helm.traefik.io/traefik
       version: 25.0.0
