@@ -4,6 +4,6 @@ application:
   managed:
     - name: traefik
       kind: helm
-      source: helm
+      source: helmChart
       url: https://helm.traefik.io/traefik
       version: 25.0.0
