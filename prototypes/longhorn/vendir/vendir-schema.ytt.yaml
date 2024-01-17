@@ -15,8 +15,6 @@ application:
       version: ""
       path: ""
       newRootPath: ""
-      files:
-        - filenames.yaml
       includePaths:
         - includes.yaml
 
