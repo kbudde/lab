@@ -1,27 +1,34 @@
 #@ load("@ytt:data", "data")
 
+#@ def pathForKind(kind, name):
+#@   if kind == "helm":
+#@     return "charts/" + name
+#@   else:
+#@     return kind + "/"
+#@   end
+#@ end
+
 #@ app = data.values.application
 ---
 apiVersion: vendir.k14s.io/v1alpha1
 kind: Config
 directories:
-#@ for chart in app.helmCharts:
-- path: #@ "charts/" + chart.name
+#@ for myApp in app.managed:
+- path: #@ pathForKind(myApp.kind, myApp.name)
   contents:
-    - path: .
-      helmChart:
-        name: #@ chart.name
-        version: #@ chart.version
-        repository:
-          url: #@ chart.url
-#@ end
-#@ for git in app.gitRepos:
-- path: #@ git.outputPath or "ytt/"
-  contents:
-    - path: #@ git.path
+    - path: #@ myApp.path or "."
+      #@ if/end myApp.source == "git":
       git:
-        url: #@ git.url
-        ref: #@ git.version
-      newRootPath: #@ git.newRootPath
-      includePaths: #@ git.includePaths
+        url: #@ myApp.url
+        ref: #@ myApp.version
+      #@ if/end myApp.source == "helm":
+      helmChart:
+        name: #@ myApp.name
+        version: #@ myApp.version
+        repository:
+          url: #@ myApp.url
+      #@ if/end myApp.newRootPath:
+      newRootPath: #@ myApp.newRootPath
+      #@ if/end myApp.includePaths:
+      includePaths: #@ myApp.includePaths
 #@ end

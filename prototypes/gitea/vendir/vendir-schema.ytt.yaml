@@ -2,18 +2,21 @@
 ---
 #@overlay/match-child-defaults missing_ok=True
 application:
-  gitRepos:
-    - name: repoName
-      url: RepoUrl
-      version: versionNUmber
-      path: path
-      newRootPath: newRootPath
+  managed:
+    - #@schema/validation min_len=1
+      name: ""
+      #@schema/validation one_of=["ytt", "helm", "static", "ytt-pkg"]
+      kind: ""
+      #@schema/validation one_of=["git", "helm"]
+      source: ""
+      #@schema/validation min_len=1
+      url: ""
+      #@schema/validation min_len=1
+      version: ""
+      path: ""
+      newRootPath: ""
       files:
         - filenames.yaml
       includePaths:
         - includes.yaml
-      outputPath: ytt/
-  helmCharts:
-    - name: HelmChartName
-      url: HelmChartUrl
-      version: versionNumber
+

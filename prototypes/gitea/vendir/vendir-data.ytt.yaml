@@ -2,7 +2,9 @@
 ---
 #@overlay/match-child-defaults missing_ok=True
 application:
-  helmCharts:
+  managed:
     - name: gitea
+      kind: helm
+      source: helm
       url: https://dl.gitea.com/charts/
       version: 10.0.2

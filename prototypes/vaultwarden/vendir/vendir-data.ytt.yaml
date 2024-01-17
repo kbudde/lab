@@ -2,10 +2,10 @@
 ---
 #@overlay/match-child-defaults missing_ok=True
 application:
-  gitRepos:
+  managed:
     - name: vaultwarden
-      outputPath: charts/vaultwarden
-      path: .
+      kind: helm
+      source: git
       url: https://github.com/guerzon/vaultwarden
       version: v0.14.0
       newRootPath: charts/vaultwarden

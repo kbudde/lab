@@ -2,7 +2,9 @@
 ---
 #@overlay/match-child-defaults missing_ok=True
 application:
-  helmCharts:
+  managed:
     - name: cloudnative-pg
+      kind: helm
+      source: helm
       url: https://cloudnative-pg.github.io/charts
       version: 0.20.0
