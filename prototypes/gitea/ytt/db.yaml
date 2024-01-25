@@ -1,2 +1,2 @@
 #@ load("cnpg/cnpg-db.lib.yaml", "cnpg_db")
---- #@ cnpg_db(name="gitea", instances=2)
+--- #@ cnpg_db(name="gitea", instances=2, size="5Gi")
