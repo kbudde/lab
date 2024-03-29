@@ -1,2 +1,5 @@
 **/.myks/tmp/
 secrets/.decrypted~*
+
+.myks
+.vendor

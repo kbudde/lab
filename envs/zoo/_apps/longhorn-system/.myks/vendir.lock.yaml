@@ -1,9 +1,0 @@
-apiVersion: vendir.k14s.io/v1alpha1
-directories:
-- contents:
-  - helmChart:
-      appVersion: v1.5.1
-      version: 1.5.1
-    path: .
-  path: charts/longhorn
-kind: LockConfig
