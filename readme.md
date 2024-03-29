@@ -1,6 +1,7 @@
 # personal pi cluster k8s manifests
 
 Rendered manifests using [github.com/mykso/myks](https://github.com/mykso/myks).
+It's using a pre-release version of myks <https://github.com/mykso/myks/pull/257>
 
 ## Secret management
 
@@ -70,4 +71,3 @@ done
 - [x] Generate ns resources for each app
 - [ ] automate deployment
   - [ ] Create own age key for each cluster and store key in cluster?
-
