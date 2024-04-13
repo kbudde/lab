@@ -1,9 +1,0 @@
-apiVersion: vendir.k14s.io/v1alpha1
-directories:
-- contents:
-  - helmChart:
-      appVersion: 1.21.3
-      version: 10.0.2
-    path: .
-  path: envs/zoo/_apps/gitea/vendor/charts/gitea
-kind: LockConfig
