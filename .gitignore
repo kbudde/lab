@@ -1,4 +1,4 @@
-**/.myks/
+**/.myks/*
 **/vendor/*
 secrets/.decrypted~*
 
