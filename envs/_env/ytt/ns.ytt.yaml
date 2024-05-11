@@ -32,3 +32,6 @@ items:
   #@overlay/match-child-defaults missing_ok=True
   - metadata:
       namespace: #@ set_ns
+
+
+#! TODO: add overlay for ClusterRoleBindings
